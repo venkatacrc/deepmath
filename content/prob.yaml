@@ -1,0 +1,569 @@
+notation:
+  # ---- Chance & counting ----
+  - id: p.prob
+    group: basics
+    level: 1
+    name: Probability of an event
+    tex: 'P(A)'
+    read: P of A, the probability of A
+    meaning: 'A number from 0 (impossible) to 1 (certain) saying how likely event $A$ is. Also written $\Pr(A)$ or $\mathbb{P}(A)$.'
+    example: 'P(\text{coin lands heads}) = \tfrac{1}{2} = 0.5'
+    ai: 'A classifier outputs $P(\text{cat}) = 0.92$: it is 92% confident the image is a cat.'
+  - id: p.complement_notation
+    group: basics
+    level: 2
+    name: Complement (not A)
+    tex: 'A^{c}, \quad \bar{A}, \quad \neg A'
+    read: A complement; not A
+    meaning: 'The event that $A$ does not happen. Exactly one of $A$ and $A^{c}$ happens.'
+    example: 'A = \text{“roll a 6”} \;\Rightarrow\; A^{c} = \text{“roll 1 to 5”}'
+    ai: 'The probability that a model is wrong is $P(\text{correct}^{c}) = 1 - P(\text{correct})$.'
+  - id: p.joint_event
+    group: basics
+    level: 3
+    name: Both / either events
+    tex: 'P(A \cap B) = P(A, B), \qquad P(A \cup B)'
+    read: P of A and B; P of A or B
+    meaning: '$A \cap B$ (also written with a comma) is “both happen”; $A \cup B$ is “at least one happens”.'
+    example: '\text{two coins: } P(H_1 \cap H_2) = \tfrac{1}{4}'
+    ai: 'Joint probabilities of many variables, $p(x_1, \ldots, x_n)$, are what generative models learn.'
+  - id: p.factorial
+    group: basics
+    level: 3
+    name: Factorial
+    tex: 'n! = n \cdot (n-1) \cdots 2 \cdot 1'
+    read: n factorial
+    meaning: 'The number of ways to put $n$ different things in order. By convention $0! = 1$.'
+    example: '4! = 24'
+    ai: 'Explains why the number of possible token orderings explodes: 10 tokens can be ordered $10! = 3{,}628{,}800$ ways.'
+  - id: p.binom
+    group: basics
+    level: 3
+    name: Binomial coefficient
+    tex: '\binom{n}{k} = \frac{n!}{k!\,(n-k)!}'
+    read: n choose k
+    meaning: 'The number of ways to choose $k$ items from $n$ when order does not matter.'
+    example: '\binom{5}{2} = 10'
+    ai: 'The unbiased pass@$k$ estimator for code models is built from binomial coefficients.'
+
+  # ---- Random variables & expectation ----
+  - id: p.rv
+    group: rv
+    level: 4
+    name: Random variable and its value
+    tex: 'X, \quad x, \quad P(X = x)'
+    read: capital X, the random variable; lower-case x, a value it takes; the probability that X equals x
+    meaning: 'A random variable is a quantity whose value is uncertain. Convention: capital letter for the variable, lower-case for a particular value. Many ML papers drop the distinction and write $p(x)$.'
+    example: 'X = \text{die roll}: \quad P(X = 3) = \tfrac{1}{6}'
+    ai: 'The next token is a random variable $X_t$ over the vocabulary.'
+  - id: p.pmf
+    group: rv
+    level: 4
+    name: Probability mass and density
+    tex: 'p(x), \qquad p(x) \ge 0, \qquad \sum_{x} p(x) = 1 \;\text{ or }\; \int p(x)\,dx = 1'
+    read: p of x
+    meaning: 'For discrete $x$, $p(x)$ is a probability (mass function). For continuous $x$ it is a density: area under it gives probability, and it can be larger than 1.'
+    ai: 'A language model outputs a probability mass function over $|\mathcal{V}|$ tokens; a diffusion model learns a density over images.'
+  - id: p.sim
+    group: rv
+    level: 4
+    name: Distributed as / sampled from
+    tex: 'x \sim p(x)'
+    read: x is drawn from p, or x is distributed according to p
+    meaning: 'The tilde says $x$ is a random sample from the distribution $p$.'
+    example: 'x \sim \mathcal{N}(0, 1), \qquad y \sim \operatorname{Bernoulli}(0.3)'
+    ai: 'Generation is written $x_t \sim p_{\boldsymbol{\theta}}(\cdot \mid x_{<t})$: sample the next token from the model.'
+  - id: p.iid
+    group: rv
+    level: 4
+    name: Independent and identically distributed
+    tex: 'x^{(1)}, \ldots, x^{(N)} \overset{\text{iid}}{\sim} p_{\text{data}}'
+    read: x 1 to x N are i i d samples from p data
+    meaning: 'Every sample comes from the same distribution, and no sample affects another. Most learning theory assumes this.'
+    ai: 'Shuffling the training set is an attempt to make minibatches look i.i.d.'
+  - id: p.expect
+    group: rv
+    level: 4
+    name: Expected value
+    tex: '\mathbb{E}[X]'
+    read: the expectation of X, or the expected value of X
+    meaning: 'The probability-weighted average of the values $X$ can take: its long-run average if you repeat the experiment many times.'
+    example: '\mathbb{E}[\text{die}] = \tfrac{1 + 2 + 3 + 4 + 5 + 6}{6} = 3.5'
+    ai: 'The training loss is an expectation over the data, estimated by averaging a minibatch.'
+  - id: p.expect_sub
+    group: rv
+    level: 5
+    name: Expectation under a distribution
+    tex: '\mathbb{E}_{x \sim p}\big[f(x)\big]'
+    read: the expectation over x drawn from p of f of x
+    meaning: 'The subscript says which random variable is averaged over, and with what distribution. Anything not in the subscript is held fixed.'
+    example: '\mathbb{E}_{(\mathbf{x}, y) \sim \mathcal{D}}\big[\ell(f_{\boldsymbol{\theta}}(\mathbf{x}), y)\big]'
+    ai: 'RLHF objectives nest two: $\mathbb{E}_{x \sim \mathcal{D}}\,\mathbb{E}_{y \sim \pi_{\theta}(\cdot \mid x)}[r(x, y)]$.'
+  - id: p.var
+    group: rv
+    level: 4
+    name: Variance and standard deviation
+    tex: '\operatorname{Var}(X) = \sigma^{2}, \qquad \operatorname{Std}(X) = \sigma'
+    read: the variance of X, sigma squared; the standard deviation, sigma
+    meaning: 'Variance is the average squared distance from the mean; the standard deviation is its square root, in the same units as $X$.'
+    example: '\text{values } \{2, 4, 6\}: \; \mu = 4, \; \sigma^{2} = \tfrac{4 + 0 + 4}{3} = \tfrac{8}{3}'
+    ai: 'Weight initialisation (Xavier, He) chooses the variance of the random weights so activations neither shrink nor blow up.'
+  - id: p.cov
+    group: rv
+    level: 5
+    name: Covariance
+    tex: '\operatorname{Cov}(X, Y) = \mathbb{E}\big[(X - \mathbb{E}X)(Y - \mathbb{E}Y)\big], \qquad \boldsymbol{\Sigma}'
+    read: the covariance of X and Y; bold Sigma, the covariance matrix
+    meaning: 'Positive when $X$ and $Y$ tend to be above average together. For a vector, $\boldsymbol{\Sigma}_{ij} = \operatorname{Cov}(x_i, x_j)$.'
+    ai: 'Whitening, PCA and the Gaussian noise in VAEs and diffusion models are all described with covariance matrices.'
+  - id: p.mean_bar
+    group: rv
+    level: 2
+    name: Sample mean (x bar)
+    tex: '\bar{x}'
+    read: x bar, the mean of x
+    meaning: 'The average of the observed values: add them and divide by how many there are.'
+    example: '\text{scores } 80, 90, 100: \quad \bar{x} = 90'
+    ai: 'Reported benchmark numbers are sample means over test questions.'
+
+  # ---- Distributions ----
+  - id: p.normal
+    group: dists
+    level: 4
+    name: Normal (Gaussian) distribution
+    tex: 'X \sim \mathcal{N}(\mu, \sigma^{2})'
+    read: X is normally distributed with mean mu and variance sigma squared
+    meaning: 'The bell curve. About 68% of samples fall within $\sigma$ of $\mu$, and 95% within $2\sigma$. The second argument is the variance, not the standard deviation (check each paper).'
+    ai: 'Weights are initialised from Gaussians; diffusion models add Gaussian noise and learn to remove it.'
+  - id: p.mvn
+    group: dists
+    level: 5
+    name: Multivariate normal
+    tex: '\mathbf{x} \sim \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma}), \qquad \boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})'
+    read: x is multivariate normal with mean mu and covariance Sigma; epsilon is standard normal
+    meaning: 'A Gaussian over vectors. $\mathcal{N}(\mathbf{0}, \mathbf{I})$ means each coordinate is an independent standard normal.'
+    ai: 'A VAE’s latent prior is $\mathcal{N}(\mathbf{0}, \mathbf{I})$; so is the starting noise of a diffusion sampler.'
+  - id: p.bernoulli
+    group: dists
+    level: 4
+    name: Bernoulli and categorical
+    tex: 'y \sim \operatorname{Bernoulli}(p), \qquad y \sim \operatorname{Cat}(\boldsymbol{\pi})'
+    read: y is Bernoulli with parameter p; y is categorical with probabilities pi
+    meaning: 'Bernoulli: a single yes/no trial, 1 with probability $p$. Categorical: one of $K$ outcomes, outcome $k$ with probability $\pi_k$.'
+    ai: 'Binary classifiers model a Bernoulli; a language model’s next-token distribution is a categorical over the vocabulary.'
+  - id: p.uniform
+    group: dists
+    level: 4
+    name: Uniform distribution
+    tex: 'u \sim \mathcal{U}(a, b)'
+    read: u is uniform between a and b
+    meaning: 'Every value between $a$ and $b$ is equally likely.'
+    ai: 'Random numbers $u \sim \mathcal{U}(0, 1)$ drive dropout, stochastic rounding and sampling from a softmax.'
+  - id: p.simplex
+    group: dists
+    level: 5
+    name: Probability simplex
+    tex: '\Delta^{K-1} = \Big\{ \mathbf{p} \in \mathbb{R}^{K} : p_{k} \ge 0, \; \textstyle\sum_{k} p_{k} = 1 \Big\}'
+    read: the K minus 1 simplex
+    meaning: 'The set of all probability vectors over $K$ outcomes. It has dimension $K - 1$ because the entries must add to 1.'
+    ai: 'Softmax maps $\mathbb{R}^{K}$ onto the (interior of the) simplex; each row of an attention matrix lies in it.'
+
+  # ---- Conditional probability & Bayes ----
+  - id: p.cond
+    group: bayes
+    level: 3
+    name: Conditional probability
+    tex: 'P(A \mid B)'
+    read: the probability of A given B
+    meaning: 'The probability of $A$ once you know $B$ happened. The bar is read “given”. Order matters: $P(A \mid B) \ne P(B \mid A)$.'
+    example: 'P(\text{rain} \mid \text{clouds}) > P(\text{rain})'
+    ai: 'Every language model is a conditional distribution $p(x_t \mid x_{<t})$; a classifier is $p(y \mid \mathbf{x})$.'
+  - id: p.independent
+    group: bayes
+    level: 5
+    name: Independence
+    tex: 'X \perp\!\!\!\perp Y, \qquad X \perp\!\!\!\perp Y \mid Z'
+    read: X is independent of Y; X is independent of Y given Z
+    meaning: 'Knowing $Y$ tells you nothing about $X$: $p(x, y) = p(x)\,p(y)$. With $\mid Z$ this holds once $Z$ is known (conditional independence).'
+    ai: 'Bayesian networks are defined by conditional independences; Naive Bayes assumes features are independent given the class.'
+  - id: p.bayes_names
+    group: bayes
+    level: 5
+    name: Prior, likelihood, posterior
+    tex: 'p(\boldsymbol{\theta}), \quad p(\mathcal{D} \mid \boldsymbol{\theta}), \quad p(\boldsymbol{\theta} \mid \mathcal{D})'
+    read: the prior; the likelihood; the posterior
+    meaning: 'Prior: belief about the parameters before seeing data. Likelihood: how probable the data is for given parameters. Posterior: updated belief after seeing the data.'
+    ai: 'Weight decay is the MAP version of a Gaussian prior on the weights.'
+  - id: p.parents
+    group: bayes
+    level: 5
+    name: Parents in a Bayesian network
+    tex: '\operatorname{Pa}(x_{i})'
+    read: the parents of x i
+    meaning: 'In a directed graphical model, the variables with arrows pointing into $x_i$: the direct causes it is conditioned on.'
+    ai: 'An autoregressive language model is a Bayesian network in which $\operatorname{Pa}(x_t) = x_{<t}$.'
+
+  # ---- Estimation: MLE & MAP ----
+  - id: p.likelihood
+    group: mle
+    level: 5
+    name: Likelihood function
+    tex: '\mathcal{L}(\boldsymbol{\theta}) = p(\mathcal{D} \mid \boldsymbol{\theta}) = \prod_{i=1}^{N} p(\mathbf{x}^{(i)} \mid \boldsymbol{\theta})'
+    read: the likelihood of theta
+    meaning: 'The same formula as the probability of the data, but read as a function of $\boldsymbol{\theta}$ with the data fixed. It is not a probability distribution over $\boldsymbol{\theta}$.'
+    ai: 'Watch out: $\mathcal{L}$ means likelihood in statistics but loss in ML, where the loss is usually the negative log-likelihood.'
+  - id: p.nll
+    group: mle
+    level: 5
+    name: Negative log-likelihood
+    tex: '\operatorname{NLL}(\boldsymbol{\theta}) = -\sum_{i=1}^{N} \log p(\mathbf{x}^{(i)} \mid \boldsymbol{\theta})'
+    read: the negative log-likelihood of theta
+    meaning: 'Take logs to turn the product into a sum, and a minus sign so that maximising likelihood becomes minimising a loss.'
+    ai: 'Cross-entropy training of a classifier or LLM is minimising exactly this.'
+
+  # ---- Stochastic sampling ----
+  - id: p.logits
+    group: sampling
+    level: 4
+    name: Logits
+    tex: '\mathbf{z} \in \mathbb{R}^{K}, \qquad \mathbf{p} = \operatorname{softmax}(\mathbf{z})'
+    read: z, the logits; p equals softmax of z
+    meaning: 'The raw, unnormalised scores a model outputs before softmax. They can be any real numbers; only their differences matter.'
+    ai: 'An LLM produces a logit for every token in the vocabulary at every position.'
+  - id: p.temperature_notation
+    group: sampling
+    level: 5
+    name: Temperature
+    tex: '\tau, \; T \quad \text{in} \quad \operatorname{softmax}(\mathbf{z} / \tau)'
+    read: tau, the temperature
+    meaning: 'Dividing the logits by $\tau$ before softmax. $\tau < 1$ sharpens the distribution (more deterministic), $\tau > 1$ flattens it (more random), and $\tau \to 0$ is the arg max.'
+    ai: 'The “temperature” setting of a chat model; also used in distillation and contrastive losses.'
+
+  # ---- Evaluation metrics ----
+  - id: p.confusion
+    group: metrics
+    level: 3
+    name: Confusion-matrix counts
+    tex: '\mathrm{TP}, \quad \mathrm{FP}, \quad \mathrm{TN}, \quad \mathrm{FN}'
+    read: true positives, false positives, true negatives, false negatives
+    meaning: '“True/false” says whether the prediction was right; “positive/negative” says what was predicted. A false positive is a false alarm; a false negative is a miss.'
+    example: '\text{spam filter flags a real email} \;\Rightarrow\; \mathrm{FP}'
+    ai: 'Precision, recall, F1 and ROC curves are all computed from these four counts.'
+
+equations:
+  - id: p.eq.simple
+    group: basics
+    level: 1
+    name: Probability of equally likely outcomes
+    tex: 'P(\text{event}) = \frac{\text{number of favourable outcomes}}{\text{total number of outcomes}}'
+    read: P of the event equals the number of favourable outcomes over the total number of outcomes
+    meaning: 'When every outcome is equally likely, count the ones you want and divide by the count of all of them.'
+    terms:
+      - ['\text{favourable}', 'outcomes where the event happens']
+      - ['\text{total}', 'all possible outcomes']
+    ai: 'A model that guesses uniformly at random among 4 answer choices scores $P = \frac{1}{4} = 25\%$, the chance baseline on multiple-choice benchmarks.'
+  - id: p.eq.accuracy
+    group: metrics
+    level: 1
+    name: Accuracy
+    tex: '\text{accuracy} = \frac{\text{correct answers}}{\text{total questions}} \times 100\%'
+    read: accuracy equals correct answers over total questions, times one hundred percent
+    meaning: 'The fraction of answers that are right, written as a percentage.'
+    terms:
+      - ['\text{correct}', 'how many the model got right']
+      - ['\text{total}', 'how many it was asked']
+    ai: '45 right out of 50 is $\frac{45}{50} = 90\%$. In paper notation: $\frac{1}{N}\sum_{i=1}^{N} \mathbb{I}[\hat{y}_i = y_i]$.'
+  - id: p.eq.mean
+    group: rv
+    level: 2
+    name: Arithmetic mean
+    tex: '\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_{i} = \frac{x_{1} + x_{2} + \cdots + x_{n}}{n}'
+    read: x bar equals one over n times the sum from i equals 1 to n of x i
+    meaning: 'Add all the values and divide by how many there are. $\frac{1}{n}\sum$ is the paper way of saying “average”.'
+    terms:
+      - ['\frac{1}{n}', 'divide by the count']
+      - ['\sum_{i=1}^{n} x_i', 'the total']
+    ai: 'Minibatch loss: $\frac{1}{B}\sum_{i=1}^{B} \ell_i$.'
+  - id: p.eq.complement
+    group: basics
+    level: 2
+    name: Complement rule
+    tex: 'P(A^{c}) = 1 - P(A)'
+    read: the probability of not A equals one minus the probability of A
+    meaning: 'Either $A$ happens or it does not, so the two probabilities add to 1.'
+    terms:
+      - ['A^{c}', 'not $A$']
+    ai: 'The chance that at least one of $k$ independent samples is correct is $1 - (1 - p)^{k}$.'
+  - id: p.eq.addition
+    group: basics
+    level: 3
+    name: Addition rule
+    tex: 'P(A \cup B) = P(A) + P(B) - P(A \cap B)'
+    read: P of A or B equals P of A plus P of B minus P of A and B
+    meaning: 'Adding $P(A)$ and $P(B)$ counts the overlap twice, so subtract it once.'
+    terms:
+      - ['P(A \cap B)', 'the double-counted overlap; 0 if the events cannot both happen']
+    ai: 'Used when combining failure modes in evaluation, and in union bounds in learning theory.'
+  - id: p.eq.cond_def
+    group: bayes
+    level: 3
+    name: Definition of conditional probability
+    tex: 'P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \qquad P(B) > 0'
+    read: P of A given B equals P of A and B over P of B
+    meaning: 'Knowing $B$ happened shrinks the world to $B$; of that, the fraction where $A$ also happens.'
+    terms:
+      - ['P(A \cap B)', 'both happen']
+      - ['P(B)', 'the new “whole”']
+    ai: 'Rearranged, $P(A \cap B) = P(A \mid B)\,P(B)$: the product rule behind autoregressive models.'
+  - id: p.eq.bayes
+    group: bayes
+    level: 4
+    name: Bayes’ theorem
+    tex: 'p(\boldsymbol{\theta} \mid \mathcal{D}) = \frac{p(\mathcal{D} \mid \boldsymbol{\theta})\;p(\boldsymbol{\theta})}{p(\mathcal{D})}'
+    read: the posterior of theta given D equals the likelihood times the prior, over the evidence
+    meaning: 'How to reverse a conditional: update a prior belief about $\boldsymbol{\theta}$ using how well each value explains the data.'
+    terms:
+      - ['p(\boldsymbol{\theta} \mid \mathcal{D})', 'posterior']
+      - ['p(\mathcal{D} \mid \boldsymbol{\theta})', 'likelihood']
+      - ['p(\boldsymbol{\theta})', 'prior']
+      - ['p(\mathcal{D}) = \int p(\mathcal{D} \mid \boldsymbol{\theta})\,p(\boldsymbol{\theta})\,d\boldsymbol{\theta}', 'evidence (normaliser), often intractable']
+    ai: 'The foundation of Bayesian deep learning, spam filters and uncertainty estimates; classifier-free guidance in diffusion is derived from it.'
+  - id: p.eq.marginal
+    group: bayes
+    level: 4
+    name: Marginalisation (sum rule)
+    tex: 'p(x) = \sum_{y} p(x, y) = \sum_{y} p(x \mid y)\,p(y)'
+    read: p of x equals the sum over y of p of x and y
+    meaning: 'To get rid of a variable you do not care about, add up over all its values. With continuous $y$ the sum becomes an integral.'
+    terms:
+      - ['p(x, y)', 'joint distribution']
+      - ['\sum_{y}', '“integrate out” $y$']
+    ai: 'Latent-variable models (VAEs, mixture models) define $p(\mathbf{x}) = \int p(\mathbf{x} \mid \mathbf{z})\,p(\mathbf{z})\,d\mathbf{z}$.'
+  - id: p.eq.expectation
+    group: rv
+    level: 4
+    name: Expectation formula
+    tex: '\mathbb{E}[f(X)] = \sum_{x} f(x)\,p(x) \qquad \text{or} \qquad \int f(x)\,p(x)\,dx'
+    read: the expectation of f of X equals the sum over x of f of x times p of x
+    meaning: 'Weight each possible value by how likely it is and add up.'
+    terms:
+      - ['p(x)', 'weight of value $x$']
+      - ['f(x)', 'the quantity being averaged']
+    ai: 'Expectations are linear: $\mathbb{E}[aX + bY] = a\,\mathbb{E}[X] + b\,\mathbb{E}[Y]$, even for dependent $X, Y$.'
+  - id: p.eq.variance
+    group: rv
+    level: 4
+    name: Variance formula
+    tex: '\operatorname{Var}(X) = \mathbb{E}\big[(X - \mu)^{2}\big] = \mathbb{E}[X^{2}] - \big(\mathbb{E}[X]\big)^{2}, \qquad \mu = \mathbb{E}[X]'
+    read: the variance of X equals the expectation of X minus mu squared, which equals E of X squared minus E of X, squared
+    meaning: 'Average squared distance from the mean. The second form is often easier to compute.'
+    terms:
+      - ['(X - \mu)^{2}', 'squared deviation']
+      - ['\mathbb{E}[X^2] - \mu^2', 'the shortcut form']
+    ai: 'Adam’s second moment $v_t$ estimates $\mathbb{E}[g^{2}]$, which is variance plus squared mean of the gradient.'
+  - id: p.eq.sample_var
+    group: metrics
+    level: 4
+    name: Sample variance and standard error
+    tex: 's^{2} = \frac{1}{n - 1}\sum_{i=1}^{n} (x_{i} - \bar{x})^{2}, \qquad \operatorname{SE}(\bar{x}) = \frac{s}{\sqrt{n}}'
+    read: s squared equals one over n minus 1 times the sum of x i minus x bar squared; the standard error is s over root n
+    meaning: 'Dividing by $n - 1$ (Bessel’s correction) makes $s^{2}$ unbiased. The standard error says how much the average itself would wobble if you re-ran the test.'
+    terms:
+      - ['s', 'sample standard deviation']
+      - ['\sqrt{n}', 'more data shrinks the error, but only by the square root']
+    ai: 'Quadrupling a benchmark’s size halves the standard error of its score.'
+  - id: p.eq.ci
+    group: metrics
+    level: 4
+    name: 95% confidence interval
+    tex: '\bar{x} \pm 1.96\,\frac{s}{\sqrt{n}}'
+    read: x bar plus or minus 1.96 times s over root n
+    meaning: 'A range that would contain the true mean in 95% of repeated experiments. 1.96 comes from the normal distribution.'
+    terms:
+      - ['\pm', 'plus or minus']
+      - ['1.96', 'about 2 standard errors']
+    ai: 'On a 1,000-question benchmark at 80% accuracy, $s \approx 0.4$ so the interval is about $\pm 2.5$ points: a 1-point lead is not significant.'
+  - id: p.eq.gaussian_pdf
+    group: dists
+    level: 4
+    name: Gaussian density
+    tex: 'p(x) = \frac{1}{\sqrt{2\pi\sigma^{2}}}\,\exp\!\left(-\frac{(x - \mu)^{2}}{2\sigma^{2}}\right)'
+    read: p of x equals one over root two pi sigma squared, times e to the minus x minus mu squared over two sigma squared
+    meaning: 'The bell curve: highest at $\mu$, falling off with squared distance measured in units of $\sigma$. The fraction in front makes the area equal 1.'
+    terms:
+      - ['(x - \mu)^{2}', 'squared distance from the mean']
+      - ['2\sigma^{2}', 'sets the width']
+      - ['1 / \sqrt{2\pi\sigma^{2}}', 'normalising constant']
+    ai: 'Taking $-\log$ of this gives a squared error, which is why MSE regression is MLE with Gaussian noise.'
+  - id: p.eq.softmax
+    group: dists
+    level: 4
+    name: Softmax
+    tex: '\operatorname{softmax}(\mathbf{z})_{i} = \frac{e^{z_{i}}}{\sum_{j=1}^{K} e^{z_{j}}}'
+    read: softmax of z, entry i, equals e to the z i over the sum over j of e to the z j
+    meaning: 'Turns any $K$ real scores into $K$ positive probabilities that add up to 1. Bigger scores get exponentially more probability.'
+    terms:
+      - ['e^{z_i}', 'makes every score positive']
+      - ['\sum_{j} e^{z_j}', 'normaliser (the partition function)']
+    ai: 'The output layer of classifiers and LLMs, and the row normaliser in attention.'
+  - id: p.eq.chain_prob
+    group: bayes
+    level: 5
+    name: Chain rule of probability (autoregression)
+    tex: 'p(x_{1}, \ldots, x_{T}) = \prod_{t=1}^{T} p(x_{t} \mid x_{<t})'
+    read: p of x 1 to x T equals the product over t of p of x t given x before t
+    meaning: 'Any joint distribution can be written as a product of one-at-a-time conditionals: the first token, then the second given the first, and so on.'
+    terms:
+      - ['x_{<t}', 'the prefix (all earlier tokens)']
+      - ['p(x_t \mid x_{<t})', 'next-token distribution (the model’s softmax output)']
+    ai: 'This identity is the whole definition of a GPT-style language model.'
+  - id: p.eq.bayesnet
+    group: bayes
+    level: 5
+    name: Bayesian network factorisation
+    tex: 'p(x_{1}, \ldots, x_{n}) = \prod_{i=1}^{n} p\big(x_{i} \mid \operatorname{Pa}(x_{i})\big)'
+    read: the joint equals the product over i of p of x i given the parents of x i
+    meaning: 'A directed acyclic graph says which variables each one directly depends on. The joint distribution then splits into small local pieces.'
+    terms:
+      - ['\operatorname{Pa}(x_i)', 'parents of node $i$ in the graph']
+      - ['\prod_{i}', 'one factor per node']
+    ai: 'Makes large models tractable; the chain rule is the special case where every earlier variable is a parent.'
+  - id: p.eq.mle
+    group: mle
+    level: 5
+    name: Maximum likelihood estimation (MLE)
+    tex: '\hat{\boldsymbol{\theta}}_{\text{MLE}} = \arg\max_{\boldsymbol{\theta}} \prod_{i=1}^{N} p(\mathbf{x}^{(i)}; \boldsymbol{\theta}) = \arg\min_{\boldsymbol{\theta}} \; -\frac{1}{N}\sum_{i=1}^{N} \log p(\mathbf{x}^{(i)}; \boldsymbol{\theta})'
+    read: theta hat MLE is the arg max over theta of the likelihood, equivalently the arg min of the average negative log-likelihood
+    meaning: 'Choose the parameters under which the observed data is most probable. Taking logs and flipping the sign gives the loss we actually minimise.'
+    terms:
+      - ['\prod_{i}', 'likelihood of i.i.d. data']
+      - ['\log', 'turns the product into a sum; does not move the arg max']
+      - ['-\frac{1}{N}\sum', 'average negative log-likelihood (the loss)']
+    ai: 'Pretraining an LLM with cross-entropy is MLE on the training text.'
+  - id: p.eq.map
+    group: mle
+    level: 5
+    name: Maximum a posteriori (MAP)
+    tex: '\hat{\boldsymbol{\theta}}_{\text{MAP}} = \arg\max_{\boldsymbol{\theta}} \Big[ \log p(\mathcal{D} \mid \boldsymbol{\theta}) + \log p(\boldsymbol{\theta}) \Big]'
+    read: theta hat MAP is the arg max of the log-likelihood plus the log prior
+    meaning: 'Like MLE, but add the log prior, which pulls the answer toward values believed likely before seeing data.'
+    terms:
+      - ['\log p(\mathcal{D} \mid \boldsymbol{\theta})', 'fit to data']
+      - ['\log p(\boldsymbol{\theta})', 'prior preference, acting as a regulariser']
+    ai: 'With a Gaussian prior $\mathcal{N}(\mathbf{0}, \sigma^{2}\mathbf{I})$, $\log p(\boldsymbol{\theta}) = -\frac{\|\boldsymbol{\theta}\|^{2}}{2\sigma^{2}} + \text{const}$: exactly L2 weight decay.'
+  - id: p.eq.mle_mse
+    group: mle
+    level: 5
+    name: Gaussian likelihood gives squared error
+    tex: '-\log \mathcal{N}\big(y \mid f_{\boldsymbol{\theta}}(\mathbf{x}), \sigma^{2}\big) = \frac{\big(y - f_{\boldsymbol{\theta}}(\mathbf{x})\big)^{2}}{2\sigma^{2}} + \frac{1}{2}\log(2\pi\sigma^{2})'
+    read: minus log of the normal density of y with mean f theta of x equals y minus f theta of x squared over two sigma squared, plus a constant
+    meaning: 'If you assume the targets are the model’s prediction plus Gaussian noise, maximising likelihood is the same as minimising squared error.'
+    terms:
+      - ['f_{\boldsymbol{\theta}}(\mathbf{x})', 'model prediction = mean of the Gaussian']
+      - ['\frac{1}{2}\log(2\pi\sigma^{2})', 'does not depend on $\boldsymbol{\theta}$, so it drops out']
+    ai: 'Similarly, a Laplace likelihood gives L1 loss and a Bernoulli likelihood gives binary cross-entropy.'
+  - id: p.eq.montecarlo
+    group: sampling
+    level: 5
+    name: Monte Carlo estimate
+    tex: '\mathbb{E}_{x \sim p}[f(x)] \approx \frac{1}{N}\sum_{i=1}^{N} f\big(x^{(i)}\big), \qquad x^{(i)} \sim p'
+    read: the expectation of f under p is approximately the average of f over N samples from p
+    meaning: 'Replace an expectation you cannot compute exactly with an average over random samples. The error shrinks like $1/\sqrt{N}$.'
+    terms:
+      - ['x^{(i)} \sim p', 'independent samples']
+      - ['\frac{1}{N}\sum', 'sample average']
+    ai: 'Stochastic gradients are Monte Carlo estimates of the full gradient; so are policy gradients in RLHF.'
+  - id: p.eq.temperature
+    group: sampling
+    level: 5
+    name: Temperature sampling
+    tex: 'p_{\tau}(x_{t} = v \mid x_{<t}) = \frac{\exp(z_{v} / \tau)}{\sum_{u \in \mathcal{V}} \exp(z_{u} / \tau)}, \qquad x_{t} \sim p_{\tau}'
+    read: p tau of token v equals e to the z v over tau, over the sum over the vocabulary of e to the z u over tau
+    meaning: 'Rescale the logits by $1/\tau$ before softmax, then draw the next token at random from the result.'
+    terms:
+      - ['z_v', 'logit of token $v$']
+      - ['\tau \to 0', 'greedy (always the top token)']
+      - ['\tau = 1', 'the model’s own distribution']
+    ai: 'Low temperature for factual answers or code; higher for brainstorming.'
+  - id: p.eq.topp
+    group: sampling
+    level: 5
+    name: Nucleus (top-p) sampling
+    tex: 'V^{(p)} = \text{smallest } V \subseteq \mathcal{V} \text{ such that } \sum_{v \in V} p(v \mid x_{<t}) \ge p, \qquad p^{\prime}(v) = \frac{p(v \mid x_{<t})\,\mathbb{I}[v \in V^{(p)}]}{\sum_{u \in V^{(p)}} p(u \mid x_{<t})}'
+    read: V p is the smallest set of tokens whose probabilities add to at least p; renormalise over it and sample
+    meaning: 'Keep only the most likely tokens that together cover probability $p$ (for example 0.9), throw away the long tail of unlikely tokens, and renormalise.'
+    terms:
+      - ['V^{(p)}', 'the nucleus: top tokens by probability']
+      - ['p', 'the threshold, e.g. $0.9$ (not to be confused with the distribution $p(\cdot)$)']
+      - ['\mathbb{I}[v \in V^{(p)}]', 'zero out everything else']
+    ai: 'The top-p setting of chat APIs. Top-$k$ is the same idea with a fixed count $k$.'
+    cite: 'Holtzman et al., “The Curious Case of Neural Text Degeneration”, 2020'
+  - id: p.eq.reparam
+    group: sampling
+    level: 5
+    name: Reparameterisation trick
+    tex: '\mathbf{z} = \boldsymbol{\mu}_{\phi}(\mathbf{x}) + \boldsymbol{\sigma}_{\phi}(\mathbf{x}) \odot \boldsymbol{\epsilon}, \qquad \boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})'
+    read: z equals mu phi of x plus sigma phi of x element-wise times epsilon, with epsilon standard normal
+    meaning: 'Instead of sampling $\mathbf{z}$ directly (which blocks gradients), sample fixed noise and transform it. Gradients can then flow into $\boldsymbol{\mu}$ and $\boldsymbol{\sigma}$.'
+    terms:
+      - ['\boldsymbol{\epsilon}', 'noise with no parameters']
+      - ['\boldsymbol{\mu}_{\phi}, \boldsymbol{\sigma}_{\phi}', 'outputs of the encoder network']
+    ai: 'Makes VAEs trainable by backpropagation; the same idea gives $\mathbf{x}_t$ in diffusion models.'
+    cite: 'Kingma & Welling, “Auto-Encoding Variational Bayes”, 2014'
+  - id: p.eq.diffusion
+    group: sampling
+    level: 5
+    name: Diffusion forward process
+    tex: 'q(\mathbf{x}_{t} \mid \mathbf{x}_{0}) = \mathcal{N}\big(\sqrt{\bar{\alpha}_{t}}\,\mathbf{x}_{0},\; (1 - \bar{\alpha}_{t})\,\mathbf{I}\big) \quad\iff\quad \mathbf{x}_{t} = \sqrt{\bar{\alpha}_{t}}\,\mathbf{x}_{0} + \sqrt{1 - \bar{\alpha}_{t}}\;\boldsymbol{\epsilon}'
+    read: q of x t given x zero is normal with mean root alpha bar t times x zero and variance one minus alpha bar t
+    meaning: 'At step $t$, the clean image $\mathbf{x}_0$ is shrunk and mixed with Gaussian noise. As $t$ grows, $\bar{\alpha}_t \to 0$ and only noise remains.'
+    terms:
+      - ['\bar{\alpha}_{t} = \prod_{s=1}^{t} \alpha_s', 'fraction of signal variance left at step $t$']
+      - ['\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})', 'the noise the network learns to predict']
+    ai: 'The model is trained with $\|\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_{\theta}(\mathbf{x}_t, t)\|^{2}$ and generates by running the process backwards.'
+    cite: 'Ho, Jain & Abbeel, “Denoising Diffusion Probabilistic Models”, 2020'
+  - id: p.eq.precision_recall
+    group: metrics
+    level: 4
+    name: Precision and recall
+    tex: '\text{Precision} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FP}}, \qquad \text{Recall} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FN}}'
+    read: precision equals TP over TP plus FP; recall equals TP over TP plus FN
+    meaning: 'Precision: of everything flagged, how much was right? Recall: of everything that should have been flagged, how much was found?'
+    terms:
+      - ['\mathrm{TP} + \mathrm{FP}', 'everything predicted positive']
+      - ['\mathrm{TP} + \mathrm{FN}', 'everything actually positive']
+    ai: 'Retrieval systems report recall@$k$; safety classifiers trade precision (few false alarms) against recall (few misses).'
+  - id: p.eq.f1
+    group: metrics
+    level: 4
+    name: F1 score
+    tex: 'F_{1} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} = \frac{2\,\mathrm{TP}}{2\,\mathrm{TP} + \mathrm{FP} + \mathrm{FN}}'
+    read: F 1 equals two times precision times recall over precision plus recall
+    meaning: 'The harmonic mean of precision and recall. It is only high when both are high.'
+    terms:
+      - ['\text{harmonic mean}', 'dominated by the smaller of the two numbers']
+    ai: 'Standard for imbalanced tasks (named entities, extractive QA), where accuracy can look good while the model misses the rare class.'
+  - id: p.eq.perplexity
+    group: metrics
+    level: 5
+    name: Perplexity
+    tex: '\operatorname{PPL} = \exp\!\left( -\frac{1}{T}\sum_{t=1}^{T} \log p_{\boldsymbol{\theta}}(x_{t} \mid x_{<t}) \right)'
+    read: perplexity equals e to the average negative log-probability per token
+    meaning: 'The exponential of the average cross-entropy per token. Roughly, how many tokens the model is “choosing between” at each step: lower is better.'
+    terms:
+      - ['-\frac{1}{T}\sum \log p', 'average negative log-likelihood per token (in nats)']
+      - ['\exp(\cdot)', 'converts back to an effective number of choices']
+    ai: 'A perplexity of 10 means the model is as uncertain as if it picked uniformly from 10 tokens each time. Only comparable between models with the same tokenizer.'
+  - id: p.eq.passk
+    group: metrics
+    level: 5
+    name: Unbiased pass@k
+    tex: '\text{pass@}k = \mathbb{E}_{\text{problems}}\left[ 1 - \frac{\binom{n - c}{k}}{\binom{n}{k}} \right]'
+    read: pass at k equals the expectation over problems of one minus n minus c choose k over n choose k
+    meaning: 'Generate $n$ samples per problem, of which $c$ are correct. The fraction is the chance that $k$ samples drawn from them are all wrong; one minus it is the chance at least one passes.'
+    terms:
+      - ['n', 'samples generated per problem']
+      - ['c', 'number that pass the tests']
+      - ['\binom{n-c}{k} / \binom{n}{k}', 'probability that all $k$ chosen samples fail']
+    ai: 'The standard metric for code generation (HumanEval).'
+    cite: 'Chen et al., “Evaluating Large Language Models Trained on Code”, 2021'

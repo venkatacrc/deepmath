@@ -1,0 +1,602 @@
+notation:
+  # ---- Vectors ----
+  - id: la.vector
+    group: vectors
+    level: 3
+    name: Column vector
+    tex: '\mathbf{x} = \begin{bmatrix} x_{1} \\ x_{2} \\ \vdots \\ x_{d} \end{bmatrix} \in \mathbb{R}^{d}'
+    read: bold x, a column of x one through x d, is in R d
+    meaning: >-
+      A vector is an ordered list of numbers. In papers a vector is a column unless stated otherwise, and
+      $d$ is its dimension (how many numbers it holds). Geometrically it is an arrow, or a point, in $d$-dimensional space.
+    example: '\mathbf{x} = \begin{bmatrix} 2 \\ -1 \\ 0.5 \end{bmatrix} \in \mathbb{R}^{3}'
+    ai: 'Each token is represented as an embedding vector $\mathbf{x} \in \mathbb{R}^{d_{\text{model}}}$ (768 numbers in GPT-2 small, 12,288 in GPT-3).'
+  - id: la.rowvec
+    group: vectors
+    level: 3
+    name: Row vector and tuple form
+    tex: '\mathbf{x}^{\top} = [x_{1}, x_{2}, \ldots, x_{d}], \qquad \mathbf{x} = (x_{1}, \ldots, x_{d})'
+    read: x transpose is the row x one to x d; x is the tuple x one to x d
+    meaning: 'Writing a column takes space, so papers write it as a transposed row, $[\ldots]^{\top}$, or as a tuple in round brackets.'
+    example: '\mathbf{x} = [2, -1, 0.5]^{\top}'
+    ai: 'Code uses the other convention: PyTorch stores a batch of vectors as the rows of a matrix.'
+  - id: la.scalarmul
+    group: vectors
+    level: 3
+    name: Scalar times vector
+    tex: 'c\,\mathbf{x} = \begin{bmatrix} c\,x_{1} \\ \vdots \\ c\,x_{d} \end{bmatrix}'
+    read: c times x
+    meaning: 'Multiply every entry by the same number. It stretches (or shrinks, or flips) the arrow without turning it.'
+    example: '2 \begin{bmatrix} 1 \\ -3 \end{bmatrix} = \begin{bmatrix} 2 \\ -6 \end{bmatrix}'
+    ai: 'A gradient step subtracts $\eta\,\mathbf{g}$: the gradient scaled down by the learning rate.'
+  - id: la.special_vectors
+    group: vectors
+    level: 4
+    name: Zero, ones and one-hot vectors
+    tex: '\mathbf{0}, \quad \mathbf{1}, \quad \mathbf{e}_{i}'
+    read: the zero vector; the ones vector; e sub i, the i-th standard basis vector
+    meaning: '$\mathbf{0}$ is all zeros, $\mathbf{1}$ is all ones, and $\mathbf{e}_i$ has a 1 in position $i$ and 0 elsewhere (“one-hot”).'
+    example: '\mathbf{e}_{2} = [0, 1, 0, 0]^{\top} \in \mathbb{R}^{4}'
+    ai: 'The label for class $y$ is the one-hot vector $\mathbf{e}_{y}$; $\mathbf{1}^{\top}\mathbf{x}$ adds up the entries of $\mathbf{x}$.'
+  - id: la.span
+    group: vectors
+    level: 4
+    name: Span and linear combination
+    tex: '\operatorname{span}\{\mathbf{v}_{1}, \ldots, \mathbf{v}_{k}\} = \Big\{ \textstyle\sum_{i=1}^{k} c_{i}\mathbf{v}_{i} : c_{i} \in \mathbb{R} \Big\}'
+    read: the span of v one to v k is the set of all sums of c i times v i
+    meaning: 'A linear combination scales vectors and adds them. The span is everything you can reach that way: a line, a plane, or a higher-dimensional flat subspace.'
+    ai: 'An attention output is a combination of value vectors, so it lies in the span of the rows of $\mathbf{V}$.'
+  - id: la.dim
+    group: vectors
+    level: 4
+    name: Dimension and basis
+    tex: '\dim(V) = d'
+    read: the dimension of V is d
+    meaning: 'A basis is a smallest set of vectors whose span is the whole space. The number of vectors in any basis is the dimension.'
+    example: '\dim(\mathbb{R}^{3}) = 3, \quad \text{basis } \{\mathbf{e}_1, \mathbf{e}_2, \mathbf{e}_3\}'
+    ai: '“Hidden size”, “model dimension” and “width” all mean the dimension of the vectors flowing through the network.'
+
+  # ---- Dot products & norms ----
+  - id: la.dot
+    group: dot
+    level: 3
+    name: Dot product (three notations)
+    tex: '\mathbf{x}^{\top}\mathbf{y} \;=\; \langle \mathbf{x}, \mathbf{y} \rangle \;=\; \mathbf{x} \cdot \mathbf{y}'
+    read: x transpose y; the inner product of x and y; x dot y
+    meaning: 'Multiply matching entries and add them up. The result is a single number that is large when the vectors point the same way.'
+    example: '[1, 2, 3] \cdot [4, 5, 6] = 4 + 10 + 18 = 32'
+    ai: 'An attention score is the dot product of a query and a key, $\mathbf{q}^{\top}\mathbf{k}$.'
+  - id: la.norm2
+    group: dot
+    level: 3
+    name: Euclidean (L2) norm
+    tex: '\|\mathbf{x}\|_{2}'
+    read: the L2 norm of x, or the length of x
+    meaning: 'The length of the arrow: square the entries, add them, take the square root. When the subscript is left off, $\|\mathbf{x}\|$ usually means this norm.'
+    example: '\left\| [3, 4] \right\|_{2} = \sqrt{9 + 16} = 5'
+    ai: 'Gradient clipping rescales $\mathbf{g}$ when $\|\mathbf{g}\|_2$ is too large; weight decay penalises $\|\boldsymbol{\theta}\|_2^{2}$.'
+  - id: la.norm1
+    group: dot
+    level: 4
+    name: L1 and max (L-infinity) norms
+    tex: '\|\mathbf{x}\|_{1} = \sum_{i} |x_{i}|, \qquad \|\mathbf{x}\|_{\infty} = \max_{i} |x_{i}|'
+    read: the L1 norm of x; the L infinity norm, or max norm, of x
+    meaning: 'Other ways to measure size: L1 adds the absolute values (“taxicab distance”); L-infinity takes the biggest one.'
+    example: '\mathbf{x} = [3, -4]: \quad \|\mathbf{x}\|_{1} = 7, \quad \|\mathbf{x}\|_{\infty} = 4'
+    ai: 'L1 penalties push weights to exactly zero (sparsity). Absmax quantization scales by $\|\mathbf{x}\|_{\infty}$.'
+  - id: la.lp
+    group: dot
+    level: 5
+    name: General Lp norm
+    tex: '\|\mathbf{x}\|_{p} = \Big( \sum_{i=1}^{d} |x_{i}|^{p} \Big)^{1/p}'
+    read: the L p norm of x is the sum of the absolute values of x i to the p, all to the power one over p
+    meaning: '$p = 1$ and $p = 2$ give the L1 and L2 norms; as $p \to \infty$ it becomes the max norm.'
+    ai: 'Adversarial-robustness papers state attack budgets as $\|\boldsymbol{\delta}\|_{\infty} \le \epsilon$ or $\|\boldsymbol{\delta}\|_{2} \le \epsilon$.'
+  - id: la.orthogonal
+    group: dot
+    level: 4
+    name: Orthogonal vectors
+    tex: '\mathbf{x} \perp \mathbf{y} \iff \mathbf{x}^{\top}\mathbf{y} = 0'
+    read: x is perpendicular to y if and only if x transpose y is zero
+    meaning: 'Vectors at a right angle have dot product zero. Orthonormal vectors are orthogonal and each has length 1.'
+    example: '[1, 0] \perp [0, 5]'
+    ai: 'In high dimensions random vectors are almost orthogonal, which is why embeddings can store many nearly independent features.'
+  - id: la.frobenius
+    group: dot
+    level: 5
+    name: Frobenius norm
+    tex: '\|\mathbf{A}\|_{F} = \sqrt{\sum_{i,j} A_{ij}^{2}} = \sqrt{\operatorname{tr}(\mathbf{A}^{\top}\mathbf{A})}'
+    read: the Frobenius norm of A
+    meaning: 'Treat the matrix as one long vector and take its L2 norm.'
+    ai: 'Weight decay on a matrix is $\frac{\lambda}{2}\|\mathbf{W}\|_{F}^{2}$; low-rank approximations are judged by the Frobenius error.'
+
+  # ---- Matrices ----
+  - id: la.matrix
+    group: matrices
+    level: 3
+    name: Matrix and its shape
+    tex: '\mathbf{A} \in \mathbb{R}^{m \times n}'
+    read: A is an m by n real matrix
+    meaning: 'A table of numbers with $m$ rows and $n$ columns. The shape is always rows first, then columns.'
+    example: '\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix} \in \mathbb{R}^{2 \times 3}'
+    ai: 'Each layer’s weights are a matrix: $\mathbf{W} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$ in maths, stored as (out, in) in PyTorch.'
+  - id: la.entry
+    group: matrices
+    level: 3
+    name: Matrix entry
+    tex: 'A_{ij}, \quad a_{ij}, \quad [\mathbf{A}]_{ij}'
+    read: A i j; the entry of A in row i, column j
+    meaning: 'The first index is the row, the second the column. For clarity, some papers write $A_{i,j}$ with a comma.'
+    example: '\mathbf{A} = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}: \quad A_{21} = 3'
+    ai: 'An attention matrix entry $A_{ij}$ is how much token $i$ attends to token $j$.'
+  - id: la.slice
+    group: matrices
+    level: 4
+    name: Rows and columns
+    tex: '\mathbf{A}_{i,:}, \quad \mathbf{A}_{:,j}'
+    read: row i of A; column j of A
+    meaning: 'A colon means “all of this index”, just like NumPy slicing. Some papers write $\mathbf{a}_i$ for a row or column; check which.'
+    ai: 'Row $w$ of the embedding matrix, $\mathbf{E}_{w,:}$, is the embedding of token $w$.'
+  - id: la.transpose
+    group: matrices
+    level: 4
+    name: Transpose
+    tex: '\mathbf{A}^{\top}, \quad (\mathbf{A}^{\top})_{ij} = A_{ji}'
+    read: A transpose
+    meaning: 'Flip the matrix over its diagonal so rows become columns. An $m \times n$ matrix becomes $n \times m$. Also written $\mathbf{A}^{T}$ or $\mathbf{A}^{\prime}$.'
+    example: '\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix}^{\top} = \begin{bmatrix} 1 & 4 \\ 2 & 5 \\ 3 & 6 \end{bmatrix}'
+    ai: 'In $\mathbf{Q}\mathbf{K}^{\top}$ the transpose lines keys up so each query is dotted with each key.'
+  - id: la.identity
+    group: matrices
+    level: 4
+    name: Identity matrix
+    tex: '\mathbf{I}_{n}'
+    read: the n by n identity matrix
+    meaning: 'Ones on the diagonal, zeros elsewhere. Multiplying by it changes nothing: $\mathbf{I}\mathbf{x} = \mathbf{x}$.'
+    example: '\mathbf{I}_{3} = \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix}'
+    ai: 'Residual connections compute $(\mathbf{I} + F)(\mathbf{x}) = \mathbf{x} + F(\mathbf{x})$; $\mathcal{N}(\mathbf{0}, \mathbf{I})$ is standard Gaussian noise.'
+  - id: la.inverse
+    group: matrices
+    level: 4
+    name: Inverse matrix
+    tex: '\mathbf{A}^{-1}, \quad \mathbf{A}^{-1}\mathbf{A} = \mathbf{A}\mathbf{A}^{-1} = \mathbf{I}'
+    read: A inverse
+    meaning: 'The matrix that undoes $\mathbf{A}$. Only square matrices with non-zero determinant have one.'
+    example: '\begin{bmatrix} 2 & 0 \\ 0 & 4 \end{bmatrix}^{-1} = \begin{bmatrix} 0.5 & 0 \\ 0 & 0.25 \end{bmatrix}'
+    ai: 'Newton’s method steps by $-\mathbf{H}^{-1}\nabla f$. Networks avoid explicit inverses because they are costly and numerically unstable.'
+  - id: la.diag
+    group: matrices
+    level: 4
+    name: Diagonal matrix
+    tex: '\operatorname{diag}(\mathbf{v}) = \begin{bmatrix} v_{1} & & \\ & \ddots & \\ & & v_{d} \end{bmatrix}'
+    read: diag of v
+    meaning: 'A matrix with $\mathbf{v}$ on the diagonal and zeros elsewhere (blank entries mean zero). $\operatorname{diag}(\mathbf{v})\,\mathbf{x} = \mathbf{v} \odot \mathbf{x}$.'
+    ai: 'Adam is a diagonal preconditioner: it rescales each coordinate separately, like multiplying by $\operatorname{diag}(1/\sqrt{\hat{\mathbf{v}}})$.'
+  - id: la.det
+    group: matrices
+    level: 4
+    name: Determinant
+    tex: '\det(\mathbf{A}), \quad |\mathbf{A}|'
+    read: the determinant of A
+    meaning: 'A single number giving how much $\mathbf{A}$ scales area or volume. Zero means it squashes space flat and has no inverse.'
+    example: '\det \begin{bmatrix} a & b \\ c & d \end{bmatrix} = ad - bc'
+    ai: 'Normalising flows need $\log|\det \mathbf{J}|$ to track how a transformation stretches probability density.'
+  - id: la.trace
+    group: matrices
+    level: 5
+    name: Trace
+    tex: '\operatorname{tr}(\mathbf{A}) = \sum_{i} A_{ii}'
+    read: the trace of A
+    meaning: 'The sum of the diagonal. It also equals the sum of the eigenvalues, and $\operatorname{tr}(\mathbf{A}\mathbf{B}) = \operatorname{tr}(\mathbf{B}\mathbf{A})$.'
+    ai: 'The Hessian trace, a measure of loss-landscape sharpness, is estimated with random vectors (Hutchinson’s trick).'
+  - id: la.rank
+    group: matrices
+    level: 4
+    name: Rank
+    tex: '\operatorname{rank}(\mathbf{A}) \le \min(m, n)'
+    read: the rank of A is at most the smaller of m and n
+    meaning: 'The number of independent directions in the output of $\mathbf{A}$. The product of a $d \times r$ matrix and an $r \times k$ matrix has rank at most $r$.'
+    ai: 'LoRA makes the weight update low-rank: $\Delta\mathbf{W} = \mathbf{B}\mathbf{A}$ with $r \ll d$.'
+  - id: la.ll
+    group: matrices
+    level: 4
+    name: Much less than
+    tex: 'r \ll d'
+    read: r is much less than d
+    meaning: '$\ll$ and $\gg$ say one quantity is smaller or larger by a big factor, not just a little.'
+    example: 'r = 8 \ll d = 4096'
+    ai: 'The whole point of a low-rank adapter is $r \ll \min(d, k)$, so it has far fewer parameters than the full matrix.'
+
+  # ---- Matrix multiplication ----
+  - id: la.matvec
+    group: matmul
+    level: 4
+    name: Matrix times vector
+    tex: '\mathbf{W}\mathbf{x}, \quad \mathbf{W} \in \mathbb{R}^{m \times n}, \; \mathbf{x} \in \mathbb{R}^{n}'
+    read: W x
+    meaning: 'Each output entry is the dot product of one row of $\mathbf{W}$ with $\mathbf{x}$. An $m \times n$ matrix turns an $n$-vector into an $m$-vector.'
+    example: '\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \begin{bmatrix} 5 \\ 6 \end{bmatrix} = \begin{bmatrix} 17 \\ 39 \end{bmatrix}'
+    ai: 'This one operation is most of the compute in a neural network.'
+  - id: la.hadamard
+    group: matmul
+    level: 4
+    name: Element-wise (Hadamard) product
+    tex: '\mathbf{a} \odot \mathbf{b}'
+    read: a Hadamard b, or a element-wise times b
+    meaning: 'Multiply entry by entry. Both must have the same shape. In code this is plain `*`, while matrix multiplication is `@`.'
+    example: '[1, 2, 3] \odot [4, 5, 6] = [4, 10, 18]'
+    ai: 'Gates (LSTM, SwiGLU), dropout masks and LayerNorm’s $\boldsymbol{\gamma} \odot \hat{\mathbf{x}}$ are all Hadamard products.'
+  - id: la.outer
+    group: matmul
+    level: 4
+    name: Outer product
+    tex: '\mathbf{u}\mathbf{v}^{\top} \in \mathbb{R}^{m \times n}'
+    read: u v transpose, the outer product of u and v
+    meaning: 'A column times a row gives a full matrix, with entry $(i, j)$ equal to $u_i v_j$. Compare $\mathbf{u}^{\top}\mathbf{v}$, which is a single number.'
+    example: '\begin{bmatrix} 1 \\ 2 \end{bmatrix} \begin{bmatrix} 3 & 4 \end{bmatrix} = \begin{bmatrix} 3 & 4 \\ 6 & 8 \end{bmatrix}'
+    ai: 'The gradient of a linear layer for one example is an outer product: $\frac{\partial \mathcal{L}}{\partial \mathbf{W}} = \boldsymbol{\delta}\,\mathbf{x}^{\top}$.'
+  - id: la.kron
+    group: matmul
+    level: 5
+    name: Kronecker product
+    tex: '\mathbf{A} \otimes \mathbf{B}'
+    read: A Kronecker B
+    meaning: 'Replace every entry $a_{ij}$ of $\mathbf{A}$ with the block $a_{ij}\mathbf{B}$. A $2 \times 2$ Kronecker a $3 \times 3$ gives a $6 \times 6$.'
+    ai: 'K-FAC and Shampoo approximate the curvature of a layer as a Kronecker product of two small matrices.'
+
+  # ---- Tensors & shapes ----
+  - id: la.tensor
+    group: tensors
+    level: 4
+    name: Tensor and its shape
+    tex: '\mathsf{X} \in \mathbb{R}^{B \times T \times d}'
+    read: X is a B by T by d tensor
+    meaning: 'A tensor is a grid of numbers with any number of axes. This one holds $B$ sequences, each of $T$ tokens, each a $d$-vector.'
+    ai: 'The activations inside a Transformer have shape (batch, sequence, model dim); with heads split out it becomes (B, h, T, d_head).'
+  - id: la.concat
+    group: tensors
+    level: 4
+    name: Concatenation
+    tex: '[\mathbf{x}; \mathbf{y}], \quad [\mathbf{x} \,\|\, \mathbf{y}], \quad \operatorname{Concat}(\mathbf{x}, \mathbf{y})'
+    read: x stacked on y; x concatenated with y
+    meaning: 'Join vectors end to end: a 3-vector and a 2-vector make a 5-vector. A semicolon usually stacks vertically, a comma side by side.'
+    example: '[\,[1, 2]; [3]\,] = [1, 2, 3]'
+    ai: 'Multi-head attention concatenates the $h$ head outputs before the output projection $\mathbf{W}^{O}$.'
+  - id: la.broadcast
+    group: tensors
+    level: 4
+    name: Adding a bias to every row
+    tex: '\mathbf{X}\mathbf{W} + \mathbf{b}, \quad \mathbf{X} \in \mathbb{R}^{n \times d}, \; \mathbf{b} \in \mathbb{R}^{k}'
+    read: X W plus b
+    meaning: 'Strictly you cannot add a vector to a matrix. Papers and code mean “add $\mathbf{b}$ to every row” (broadcasting), which is $\mathbf{X}\mathbf{W} + \mathbf{1}\mathbf{b}^{\top}$.'
+    ai: 'Watch for this in batched layer equations: the bias is broadcast across the batch and sequence axes.'
+  - id: la.dims_named
+    group: tensors
+    level: 4
+    name: Transformer dimension names
+    tex: 'd_{\text{model}}, \; d_{k}, \; d_{v}, \; d_{\text{ff}}, \; h, \; n'
+    read: d model; d k; d v; d f f; h; n
+    meaning: 'Model width; key/query size per head; value size per head; feed-forward hidden size; number of heads; sequence length. Usually $d_k = d_v = d_{\text{model}}/h$ and $d_{\text{ff}} = 4\,d_{\text{model}}$.'
+    example: '\text{Base Transformer: } d_{\text{model}} = 512, \; h = 8, \; d_k = 64, \; d_{\text{ff}} = 2048'
+    ai: 'These are the names used by Vaswani et al. (2017) and most later papers.'
+
+  # ---- Eigenvalues & SVD ----
+  - id: la.eigen_notation
+    group: decomp
+    level: 4
+    name: Eigenvalues
+    tex: '\lambda_{\max}(\mathbf{A}), \quad \lambda_{\min}(\mathbf{A}), \quad \lambda_{i}'
+    read: lambda max of A; lambda min of A; lambda i
+    meaning: 'The eigenvalues of a square matrix, largest and smallest. For symmetric matrices they are real, and the eigenvectors can be chosen orthogonal.'
+    ai: '$\lambda_{\max}$ of the loss Hessian (the sharpness) limits the largest stable learning rate.'
+  - id: la.psd
+    group: decomp
+    level: 5
+    name: Positive (semi-)definite
+    tex: '\mathbf{A} \succeq 0 \iff \mathbf{x}^{\top}\mathbf{A}\mathbf{x} \ge 0 \;\; \forall \mathbf{x}'
+    read: A is positive semidefinite
+    meaning: '$\succeq 0$ is an order for symmetric matrices, not for entries: every eigenvalue is at least 0. $\succ 0$ (positive definite) means every eigenvalue is strictly positive.'
+    ai: 'Covariance matrices are PSD; a Hessian $\nabla^{2}f \succ 0$ at a stationary point means it is a local minimum.'
+  - id: la.orthmatrix
+    group: decomp
+    level: 4
+    name: Orthogonal matrix
+    tex: '\mathbf{Q}^{\top}\mathbf{Q} = \mathbf{Q}\mathbf{Q}^{\top} = \mathbf{I}'
+    read: Q transpose Q equals the identity
+    meaning: 'Its columns are orthonormal, so it only rotates or reflects: lengths and angles are preserved, and $\mathbf{Q}^{-1} = \mathbf{Q}^{\top}$.'
+    ai: 'RoPE rotates query and key vectors with orthogonal matrices; quantization methods such as QuaRot rotate weights to spread out outliers.'
+  - id: la.specnorm
+    group: decomp
+    level: 5
+    name: Spectral norm
+    tex: '\|\mathbf{W}\|_{2} = \sigma_{\max}(\mathbf{W}) = \max_{\mathbf{x} \ne \mathbf{0}} \frac{\|\mathbf{W}\mathbf{x}\|_{2}}{\|\mathbf{x}\|_{2}}'
+    read: the spectral norm of W equals its largest singular value
+    meaning: 'The most that $\mathbf{W}$ can stretch any vector. On a matrix, $\|\cdot\|_2$ means this, not the Frobenius norm.'
+    ai: 'Spectral normalisation divides $\mathbf{W}$ by $\sigma_{\max}$ to stabilise GAN training; the Muon optimizer takes steps of fixed spectral norm.'
+
+  # ---- Transformer layers ----
+  - id: la.embedding
+    group: transformers
+    level: 4
+    name: Embedding matrix
+    tex: '\mathbf{E} \in \mathbb{R}^{|\mathcal{V}| \times d_{\text{model}}}'
+    read: E is a vocabulary-size by d-model matrix
+    meaning: 'One row per token in the vocabulary. Looking up a token means reading its row.'
+    ai: 'Many models reuse $\mathbf{E}$ for the output layer too (“weight tying”): logits $= \mathbf{h}\,\mathbf{E}^{\top}$.'
+  - id: la.projections
+    group: transformers
+    level: 5
+    name: Projection matrices
+    tex: '\mathbf{W}^{Q}, \mathbf{W}^{K} \in \mathbb{R}^{d_{\text{model}} \times d_{k}}, \quad \mathbf{W}^{V} \in \mathbb{R}^{d_{\text{model}} \times d_{v}}, \quad \mathbf{W}^{O} \in \mathbb{R}^{h d_{v} \times d_{\text{model}}}'
+    read: W Q, W K, W V and W O
+    meaning: 'The superscript letters are names, not powers. They map token vectors to queries, keys and values, and map the heads back to the model width.'
+    ai: 'With the row-vector convention of Vaswani et al., a projection is written $\mathbf{X}\mathbf{W}^{Q}$ (data on the left).'
+
+equations:
+  - id: la.eq.pythagoras
+    group: vectors
+    level: 2
+    name: Pythagorean theorem
+    tex: 'c^{2} = a^{2} + b^{2}'
+    read: c squared equals a squared plus b squared
+    meaning: 'In a right-angled triangle, the square on the long side equals the sum of the squares on the other two sides.'
+    terms:
+      - ['a, b', 'the two short sides, which meet at the right angle']
+      - ['c', 'the long side (hypotenuse)']
+    ai: 'Extended to $d$ dimensions, this is the length of a vector: $\|\mathbf{x}\|_2 = \sqrt{x_1^2 + \cdots + x_d^2}$.'
+  - id: la.eq.vecadd
+    group: vectors
+    level: 3
+    name: Adding vectors
+    tex: '\begin{bmatrix} 1 \\ 2 \end{bmatrix} + \begin{bmatrix} 3 \\ -1 \end{bmatrix} = \begin{bmatrix} 1 + 3 \\ 2 - 1 \end{bmatrix} = \begin{bmatrix} 4 \\ 1 \end{bmatrix}'
+    read: the vector 1, 2 plus the vector 3, minus 1 equals the vector 4, 1
+    meaning: 'Add entry by entry. As arrows: put the second arrow’s tail on the first one’s tip.'
+    terms:
+      - ['\mathbf{x} + \mathbf{y}', 'only defined when both have the same dimension']
+    ai: 'The input to a Transformer is token embedding + position embedding; a residual connection adds a layer’s output back to its input.'
+  - id: la.eq.dot
+    group: dot
+    level: 3
+    name: Dot product formula
+    tex: '\mathbf{x}^{\top}\mathbf{y} = \sum_{i=1}^{d} x_{i} y_{i} = x_{1}y_{1} + x_{2}y_{2} + \cdots + x_{d}y_{d}'
+    read: x transpose y equals the sum over i of x i times y i
+    meaning: 'Pair up the entries, multiply each pair, add the results.'
+    terms:
+      - ['\mathbf{x}^{\top}', 'a $1 \times d$ row']
+      - ['\mathbf{y}', 'a $d \times 1$ column']
+      - ['x_i y_i', 'product of the $i$-th entries']
+    ai: 'Every neuron, every attention score and every logit is a dot product.'
+  - id: la.eq.norm
+    group: dot
+    level: 3
+    name: Length of a vector
+    tex: '\|\mathbf{x}\|_{2} = \sqrt{\mathbf{x}^{\top}\mathbf{x}} = \sqrt{\sum_{i=1}^{d} x_{i}^{2}}'
+    read: the L2 norm of x equals the square root of x transpose x, the square root of the sum of x i squared
+    meaning: 'Pythagoras in $d$ dimensions: the length is the square root of the vector dotted with itself.'
+    terms:
+      - ['\mathbf{x}^{\top}\mathbf{x}', 'sum of squares, also written $\|\mathbf{x}\|_2^2$']
+    ai: 'RMSNorm divides by $\|\mathbf{x}\|_2/\sqrt{d}$, the root-mean-square size of the entries.'
+  - id: la.eq.cosine
+    group: dot
+    level: 4
+    name: Cosine similarity
+    tex: '\cos\theta = \frac{\mathbf{x}^{\top}\mathbf{y}}{\|\mathbf{x}\|_{2}\,\|\mathbf{y}\|_{2}} \in [-1, 1]'
+    read: cosine theta equals x transpose y over the norm of x times the norm of y
+    meaning: 'Divide the dot product by both lengths to keep only the angle. 1 means same direction, 0 unrelated (orthogonal), −1 opposite.'
+    terms:
+      - ['\theta', 'angle between the vectors']
+      - ['\mathbf{x}^{\top}\mathbf{y}', 'dot product']
+      - ['\|\mathbf{x}\|_{2}\,\|\mathbf{y}\|_{2}', 'product of the lengths']
+    ai: 'Semantic search and retrieval rank documents by the cosine similarity of their embeddings to the query embedding; CLIP trains on it.'
+  - id: la.eq.matmul
+    group: matmul
+    level: 4
+    name: Matrix multiplication
+    tex: '\mathbf{C} = \mathbf{A}\mathbf{B}, \qquad C_{ij} = \sum_{k=1}^{n} A_{ik} B_{kj}, \qquad \underset{m \times n}{\mathbf{A}}\;\underset{n \times p}{\mathbf{B}} = \underset{m \times p}{\mathbf{C}}'
+    read: C equals A B; C i j is the sum over k of A i k times B k j
+    meaning: 'Entry $(i, j)$ is row $i$ of $\mathbf{A}$ dotted with column $j$ of $\mathbf{B}$. The inner sizes must match and cancel: $(m \times n)(n \times p) \to m \times p$.'
+    terms:
+      - ['A_{ik}', 'row $i$ of $\mathbf{A}$, walking along $k$']
+      - ['B_{kj}', 'column $j$ of $\mathbf{B}$, walking down $k$']
+      - ['\sum_{k}', 'the shared index is summed away']
+    ai: 'Checking that inner dimensions match is the fastest way to read an unfamiliar layer equation. Order matters: $\mathbf{A}\mathbf{B} \ne \mathbf{B}\mathbf{A}$ in general.'
+  - id: la.eq.linear
+    group: matmul
+    level: 4
+    name: Linear (fully connected) layer
+    tex: '\mathbf{y} = \mathbf{W}\mathbf{x} + \mathbf{b}, \qquad \mathbf{W} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}, \; \mathbf{b} \in \mathbb{R}^{d_{\text{out}}}'
+    read: y equals W x plus b
+    meaning: 'Every output is a weighted sum of all inputs plus a bias: a whole layer of neurons in one line.'
+    terms:
+      - ['\mathbf{x} \in \mathbb{R}^{d_{\text{in}}}', 'input vector']
+      - ['\mathbf{W}', 'weights; row $i$ belongs to output neuron $i$']
+      - ['\mathbf{b}', 'biases']
+      - ['\mathbf{y} \in \mathbb{R}^{d_{\text{out}}}', 'output vector']
+    ai: 'In PyTorch, `nn.Linear` computes $\mathbf{Y} = \mathbf{X}\mathbf{W}^{\top} + \mathbf{b}$ for a batch $\mathbf{X}$ whose rows are examples.'
+  - id: la.eq.transpose_product
+    group: matmul
+    level: 4
+    name: Transpose of a product
+    tex: '(\mathbf{A}\mathbf{B})^{\top} = \mathbf{B}^{\top}\mathbf{A}^{\top}'
+    read: the transpose of A B equals B transpose A transpose
+    meaning: 'Transposing a product reverses the order. Shapes check it: $(m \times n)(n \times p)$ transposed is $(p \times n)(n \times m)$.'
+    terms:
+      - ['\mathbf{B}^{\top}\mathbf{A}^{\top}', 'order is reversed']
+    ai: 'Explains why the column-vector form $\mathbf{W}\mathbf{x}$ and the row-vector form $\mathbf{x}^{\top}\mathbf{W}^{\top}$ of a layer are the same thing.'
+  - id: la.eq.batched
+    group: tensors
+    level: 4
+    name: A layer on a whole batch
+    tex: '\underset{B \times d_{\text{out}}}{\mathbf{Y}} = \underset{B \times d_{\text{in}}}{\mathbf{X}}\;\underset{d_{\text{in}} \times d_{\text{out}}}{\mathbf{W}^{\top}} + \mathbf{1}\mathbf{b}^{\top}'
+    read: Y equals X W transpose plus the bias added to every row
+    meaning: 'Stack $B$ examples as the rows of $\mathbf{X}$ and one matrix multiplication handles them all. Writing shapes under each symbol is the standard way to check an equation.'
+    terms:
+      - ['\mathbf{X}', 'one example per row']
+      - ['\mathbf{W}^{\top}', 'the layer weights, transposed for rows']
+      - ['\mathbf{1}\mathbf{b}^{\top}', 'the bias copied to every row (broadcasting)']
+    ai: 'GPUs are fast because this batched multiply reuses each weight $B$ times per load.'
+  - id: la.eq.einsum
+    group: tensors
+    level: 5
+    name: Index (einsum) notation
+    tex: 'Y_{b t j} = \sum_{k} X_{b t k}\, W_{k j} \qquad \Longleftrightarrow \qquad \texttt{einsum("btk,kj->btj", X, W)}'
+    read: Y b t j equals the sum over k of X b t k times W k j
+    meaning: 'Write the formula for a single entry. Any index that appears on the right but not on the left is summed over. This works for any number of axes.'
+    terms:
+      - ['b, t', 'batch and position: carried through unchanged']
+      - ['k', 'shared index: summed away']
+      - ['j', 'new output feature index']
+    ai: 'Attention scores are $S_{bhij} = \sum_{d} Q_{bhid} K_{bhjd}$: einsum `"bhid,bhjd->bhij"`.'
+  - id: la.eq.eigen
+    group: decomp
+    level: 4
+    name: Eigenvector equation
+    tex: '\mathbf{A}\mathbf{v} = \lambda\mathbf{v}, \qquad \mathbf{v} \ne \mathbf{0}'
+    read: A v equals lambda v
+    meaning: 'An eigenvector is a direction that $\mathbf{A}$ only stretches, without turning it. The eigenvalue $\lambda$ is the stretch factor.'
+    terms:
+      - ['\mathbf{v}', 'eigenvector (a special direction)']
+      - ['\lambda', 'eigenvalue (the stretch)']
+    ai: 'The top Hessian eigenvector is the sharpest direction of the loss; PCA directions are covariance eigenvectors.'
+  - id: la.eq.eigendecomp
+    group: decomp
+    level: 5
+    name: Eigendecomposition of a symmetric matrix
+    tex: '\mathbf{A} = \mathbf{Q}\boldsymbol{\Lambda}\mathbf{Q}^{\top} = \sum_{i=1}^{n} \lambda_{i}\,\mathbf{q}_{i}\mathbf{q}_{i}^{\top}'
+    read: A equals Q Lambda Q transpose
+    meaning: 'A symmetric matrix is a rotation, then independent scaling along each axis, then the rotation undone.'
+    terms:
+      - ['\mathbf{Q}', 'orthogonal; its columns $\mathbf{q}_i$ are the eigenvectors']
+      - ['\boldsymbol{\Lambda} = \operatorname{diag}(\lambda_1, \ldots, \lambda_n)', 'the eigenvalues']
+    ai: 'Analyses of gradient descent on a quadratic loss rotate into this basis, where each direction evolves on its own.'
+  - id: la.eq.svd
+    group: decomp
+    level: 5
+    name: Singular value decomposition (SVD)
+    tex: '\mathbf{A} = \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top} = \sum_{i=1}^{r} \sigma_{i}\,\mathbf{u}_{i}\mathbf{v}_{i}^{\top}, \qquad \sigma_{1} \ge \sigma_{2} \ge \cdots \ge \sigma_{r} > 0'
+    read: A equals U Sigma V transpose, a sum of sigma i u i v i transpose
+    meaning: 'Every matrix, square or not, is a rotation, a scaling along the axes, and another rotation. Keeping only the largest $\sigma_i$ gives the best low-rank approximation (Eckart–Young).'
+    terms:
+      - ['\mathbf{U} \in \mathbb{R}^{m \times m}', 'output directions (left singular vectors)']
+      - ['\boldsymbol{\Sigma}', 'singular values on the diagonal']
+      - ['\mathbf{V} \in \mathbb{R}^{n \times n}', 'input directions (right singular vectors)']
+      - ['r', 'rank = number of non-zero singular values']
+    ai: 'Low-rank compression, the analysis of LoRA updates, spectral norms and the Muon optimizer (which replaces $\boldsymbol{\Sigma}$ by $\mathbf{I}$) all rest on the SVD.'
+  - id: la.eq.embedding
+    group: transformers
+    level: 4
+    name: Embedding lookup
+    tex: '\mathbf{x}_{t} = \mathbf{E}^{\top}\mathbf{e}_{w_{t}} = \mathbf{E}_{w_{t},:}^{\top}'
+    read: x t equals E transpose times the one-hot vector for token w t, which is row w t of E
+    meaning: 'Multiplying by a one-hot vector just picks out one row. That is why an embedding layer is a table lookup, not a real matrix multiplication.'
+    terms:
+      - ['w_t', 'id of the token at position $t$']
+      - ['\mathbf{e}_{w_t} \in \mathbb{R}^{|\mathcal{V}|}', 'one-hot vector for that id']
+      - ['\mathbf{E}', 'embedding matrix, $|\mathcal{V}| \times d_{\text{model}}$']
+    ai: 'The first step of every language model: turn token ids into vectors.'
+  - id: la.eq.qkv
+    group: transformers
+    level: 5
+    name: Queries, keys and values
+    tex: '\mathbf{Q} = \mathbf{X}\mathbf{W}^{Q}, \qquad \mathbf{K} = \mathbf{X}\mathbf{W}^{K}, \qquad \mathbf{V} = \mathbf{X}\mathbf{W}^{V}'
+    read: Q equals X W Q; K equals X W K; V equals X W V
+    meaning: 'Three linear projections of the same tokens. A query asks “what am I looking for?”, a key says “what do I contain?”, a value is “what I pass on if chosen”.'
+    terms:
+      - ['\mathbf{X} \in \mathbb{R}^{n \times d_{\text{model}}}', 'one token per row']
+      - ['\mathbf{Q}, \mathbf{K} \in \mathbb{R}^{n \times d_k}', 'queries and keys']
+      - ['\mathbf{V} \in \mathbb{R}^{n \times d_v}', 'values']
+    ai: 'In self-attention all three come from the same $\mathbf{X}$; in cross-attention $\mathbf{Q}$ comes from the decoder and $\mathbf{K}, \mathbf{V}$ from the encoder.'
+  - id: la.eq.attention
+    group: transformers
+    level: 5
+    name: Scaled dot-product attention
+    tex: '\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{softmax}\!\left( \frac{\mathbf{Q}\mathbf{K}^{\top}}{\sqrt{d_{k}}} + \mathbf{M} \right)\mathbf{V}'
+    read: attention of Q, K, V equals softmax of Q K transpose over the square root of d k, plus the mask M, times V
+    meaning: >-
+      Score every query against every key, scale, turn each row of scores into weights that add to 1, and take
+      that weighted average of the values.
+    terms:
+      - ['\mathbf{Q}\mathbf{K}^{\top} \in \mathbb{R}^{n \times n}', 'all query–key dot products']
+      - ['\sqrt{d_k}', 'keeps the score variance near 1 so softmax does not saturate']
+      - ['\mathbf{M}', 'mask: 0 where allowed, $-\infty$ for future tokens (causal models)']
+      - ['\operatorname{softmax}(\cdot)', 'applied to each row separately']
+      - ['(\cdots)\mathbf{V}', 'weighted average of value vectors']
+    ai: 'The core operation of every Transformer. The original paper writes it without $\mathbf{M}$ and describes the mask in the text.'
+    cite: 'Vaswani et al., “Attention Is All You Need”, 2017'
+  - id: la.eq.multihead
+    group: transformers
+    level: 5
+    name: Multi-head attention
+    tex: '\begin{aligned} \operatorname{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) &= \operatorname{Concat}(\text{head}_{1}, \ldots, \text{head}_{h})\,\mathbf{W}^{O} \\ \text{head}_{i} &= \operatorname{Attention}(\mathbf{Q}\mathbf{W}_{i}^{Q}, \mathbf{K}\mathbf{W}_{i}^{K}, \mathbf{V}\mathbf{W}_{i}^{V}) \end{aligned}'
+    read: multi-head of Q, K, V equals the concatenation of head 1 to head h, times W O, where head i is attention with its own projections
+    meaning: 'Run $h$ smaller attentions in parallel, each with its own projections so it can focus on a different relationship, then join the results and mix them with $\mathbf{W}^{O}$.'
+    terms:
+      - ['h', 'number of heads']
+      - ['\mathbf{W}_{i}^{Q} \in \mathbb{R}^{d_{\text{model}} \times d_k}', 'head $i$’s query projection (the subscript is the head)']
+      - ['\mathbf{W}^{O} \in \mathbb{R}^{h d_v \times d_{\text{model}}}', 'output projection']
+    ai: 'Grouped-query attention (GQA) shares each $\mathbf{W}^{K}_i, \mathbf{W}^{V}_i$ across several query heads to shrink the KV cache.'
+    cite: 'Vaswani et al., 2017'
+  - id: la.eq.ffn
+    group: transformers
+    level: 5
+    name: Position-wise feed-forward network
+    tex: '\operatorname{FFN}(\mathbf{x}) = \max(0, \mathbf{x}\mathbf{W}_{1} + \mathbf{b}_{1})\,\mathbf{W}_{2} + \mathbf{b}_{2}'
+    read: F F N of x equals max of zero and x W 1 plus b 1, times W 2, plus b 2
+    meaning: 'Expand each token vector to a wider hidden layer, apply ReLU, and project back. It acts on every position separately.'
+    terms:
+      - ['\mathbf{W}_{1} \in \mathbb{R}^{d_{\text{model}} \times d_{\text{ff}}}', 'up-projection']
+      - ['\max(0, \cdot)', 'ReLU, applied element-wise']
+      - ['\mathbf{W}_{2} \in \mathbb{R}^{d_{\text{ff}} \times d_{\text{model}}}', 'down-projection']
+    ai: 'Modern LLMs use SwiGLU instead: $(\operatorname{SiLU}(\mathbf{x}\mathbf{W}) \odot \mathbf{x}\mathbf{V})\mathbf{W}_{2}$. The FFN holds about two-thirds of a Transformer’s parameters.'
+    cite: 'Vaswani et al., 2017; Shazeer, “GLU Variants Improve Transformer”, 2020'
+  - id: la.eq.layernorm
+    group: transformers
+    level: 5
+    name: Layer normalisation
+    tex: '\operatorname{LayerNorm}(\mathbf{x}) = \boldsymbol{\gamma} \odot \frac{\mathbf{x} - \mu}{\sqrt{\sigma^{2} + \epsilon}} + \boldsymbol{\beta}, \qquad \mu = \frac{1}{d}\sum_{i} x_{i}, \;\; \sigma^{2} = \frac{1}{d}\sum_{i} (x_{i} - \mu)^{2}'
+    read: layer norm of x equals gamma times x minus mu over the square root of sigma squared plus epsilon, plus beta
+    meaning: 'Shift and scale each token vector so its entries have mean 0 and variance 1, then apply a learned scale $\boldsymbol{\gamma}$ and shift $\boldsymbol{\beta}$.'
+    terms:
+      - ['\mu, \sigma^{2}', 'mean and variance over the $d$ features of one token']
+      - ['\epsilon', 'small constant (e.g. $10^{-5}$) that prevents division by zero']
+      - ['\boldsymbol{\gamma}, \boldsymbol{\beta} \in \mathbb{R}^{d}', 'learned gain and bias']
+    ai: 'Keeps activations in a stable range. Many LLMs use RMSNorm, which skips the mean subtraction and $\boldsymbol{\beta}$.'
+    cite: 'Ba, Kiros & Hinton, “Layer Normalization”, 2016'
+  - id: la.eq.residual
+    group: transformers
+    level: 5
+    name: Pre-norm residual block
+    tex: '\begin{aligned} \mathbf{h} &= \mathbf{x} + \operatorname{MultiHead}(\operatorname{LN}(\mathbf{x})) \\ \mathbf{y} &= \mathbf{h} + \operatorname{FFN}(\operatorname{LN}(\mathbf{h})) \end{aligned}'
+    read: h equals x plus multi-head attention of layer-norm of x; y equals h plus the F F N of layer-norm of h
+    meaning: 'Each sub-layer reads a normalised copy of the running vector and adds its result back. The running vector $\mathbf{x}$ is called the residual stream.'
+    terms:
+      - ['\mathbf{x} + (\cdot)', 'residual (skip) connection: the identity path']
+      - ['\operatorname{LN}', 'LayerNorm or RMSNorm']
+    ai: 'The residual path lets gradients flow straight to early layers, which is what makes 100-layer models trainable.'
+    cite: 'He et al., 2016 (ResNet); Xiong et al., “On Layer Normalization in the Transformer Architecture”, 2020'
+  - id: la.eq.rope
+    group: transformers
+    level: 5
+    name: Rotary position embedding (RoPE)
+    tex: '\mathbf{R}_{m} = \begin{bmatrix} \cos m\theta & -\sin m\theta \\ \sin m\theta & \cos m\theta \end{bmatrix}, \qquad (\mathbf{R}_{m}\mathbf{q})^{\top}(\mathbf{R}_{n}\mathbf{k}) = \mathbf{q}^{\top}\mathbf{R}_{n-m}\,\mathbf{k}'
+    read: R m is rotation by m theta; R m q transpose times R n k equals q transpose R n minus m k
+    meaning: 'Rotate each 2-D pair of query and key coordinates by an angle proportional to the token’s position. The attention score then depends only on the distance $n - m$ between the tokens.'
+    terms:
+      - ['m, n', 'positions of the query and key tokens']
+      - ['\theta', 'rotation frequency; each coordinate pair $i$ has its own $\theta_i = 10000^{-2i/d}$']
+      - ['\mathbf{R}_{m}^{\top}\mathbf{R}_{n} = \mathbf{R}_{n-m}', 'rotations compose, so only the difference survives']
+    ai: 'Used by LLaMA, Mistral, Qwen and most open LLMs. Context-extension methods (NTK scaling, YaRN) change $\theta$.'
+    cite: 'Su et al., “RoFormer”, 2021'
+  - id: la.eq.lora
+    group: transformers
+    level: 5
+    name: Low-rank adaptation (LoRA)
+    tex: '\mathbf{h} = \mathbf{W}_{0}\mathbf{x} + \frac{\alpha}{r}\,\mathbf{B}\mathbf{A}\mathbf{x}, \qquad \mathbf{B} \in \mathbb{R}^{d \times r}, \; \mathbf{A} \in \mathbb{R}^{r \times k}, \; r \ll \min(d, k)'
+    read: h equals W zero x plus alpha over r times B A x
+    meaning: 'Freeze the pretrained weights $\mathbf{W}_0$ and learn only a low-rank correction $\Delta\mathbf{W} = \mathbf{B}\mathbf{A}$. That trains $r(d + k)$ numbers instead of $dk$.'
+    terms:
+      - ['\mathbf{W}_{0} \in \mathbb{R}^{d \times k}', 'frozen pretrained weights']
+      - ['\mathbf{B}\mathbf{A}', 'rank-$r$ update; $\mathbf{B}$ starts at zero, so training starts from the original model']
+      - ['\alpha / r', 'scale, so changing $r$ needs little learning-rate re-tuning']
+    ai: 'With $d = k = 4096$ and $r = 8$, a full matrix has 16.8 M weights and the adapter only 65 K.'
+    cite: 'Hu et al., “LoRA: Low-Rank Adaptation of Large Language Models”, 2021'

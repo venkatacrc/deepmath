@@ -1,0 +1,419 @@
+notation:
+  - id: o.min
+    group: minima
+    level: 4
+    name: Optimisation problem
+    tex: '\min_{\boldsymbol{\theta} \in \mathbb{R}^{d}} \; \mathcal{L}(\boldsymbol{\theta})'
+    read: minimise L of theta over theta in R d
+    meaning: 'Find the parameters that make the loss as small as possible. The subscript names the variables you are allowed to change, and where they may live.'
+    ai: 'Every training run is an attempt to solve this problem, only approximately.'
+  - id: o.st
+    group: minima
+    level: 5
+    name: Constrained problem
+    tex: '\min_{\mathbf{x}} f(\mathbf{x}) \quad \text{s.t.} \quad g(\mathbf{x}) \le 0'
+    read: minimise f of x subject to g of x at most zero
+    meaning: '“s.t.” means “subject to”: only points satisfying the constraint count. Lagrange multipliers turn this into an unconstrained problem.'
+    ai: 'Trust-region methods (TRPO) constrain the step by a KL budget; RLHF’s KL penalty is the Lagrangian form of such a constraint.'
+  - id: o.global_local
+    group: minima
+    level: 4
+    name: Global and local minima
+    tex: 'f(\mathbf{x}^{*}) \le f(\mathbf{x}) \;\; \forall \mathbf{x} \qquad \text{vs.} \qquad \forall \mathbf{x} \in B_{r}(\mathbf{x}^{*})'
+    read: global minimum, for every x; local minimum, for every x in a small ball around x star
+    meaning: 'A global minimum is the lowest point anywhere; a local minimum is the lowest point in its neighbourhood, a small ball $B_r$ of radius $r$.'
+    ai: 'Neural losses have many minima; in large networks most local minima turn out to be nearly as good as the global one.'
+  - id: o.iterate
+    group: gd
+    level: 4
+    name: Iterates and the update arrow
+    tex: '\boldsymbol{\theta}_{t}, \quad \boldsymbol{\theta}_{t+1}, \quad \boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta\,\mathbf{g}'
+    read: theta at step t; theta at step t plus 1; theta gets theta minus eta g
+    meaning: 'A subscript $t$ counts optimisation steps. The left arrow is assignment in an algorithm (like `=` in code), not a mathematical equality.'
+    ai: 'Optimizer pseudocode in papers (Adam, AdamW, Lion) is written with these conventions.'
+  - id: o.lr
+    group: gd
+    level: 4
+    name: Learning rate
+    tex: '\eta, \quad \alpha, \quad \eta_{t}'
+    read: eta (or alpha), the learning rate; eta t, the learning rate at step t
+    meaning: 'The step size: how far to move against the gradient. A subscript $t$ means it changes during training according to a schedule.'
+    ai: 'Typical peak values: $10^{-3}$ for small models, $3 \times 10^{-4}$ to $10^{-4}$ for LLM pretraining, $10^{-5}$ for fine-tuning.'
+  - id: o.grad_step
+    group: gd
+    level: 4
+    name: Gradient at step t
+    tex: '\mathbf{g}_{t} = \nabla_{\boldsymbol{\theta}}\,\mathcal{L}(\boldsymbol{\theta}_{t-1})'
+    read: g t, the gradient at step t
+    meaning: 'Shorthand for the (usually stochastic) gradient used in step $t$. Adam’s paper evaluates it at $\boldsymbol{\theta}_{t-1}$, the weights before the update.'
+    ai: '$\mathbf{g}_t^{2}$ in optimizer papers means the element-wise square $\mathbf{g}_t \odot \mathbf{g}_t$, not a dot product.'
+  - id: o.minibatch
+    group: sgd
+    level: 4
+    name: Minibatch
+    tex: '\mathcal{B}_{t} \subset \{1, \ldots, N\}, \quad |\mathcal{B}_{t}| = B'
+    read: B t, the minibatch at step t, of size B
+    meaning: 'A small random subset of the training examples used to estimate the gradient at one step.'
+    ai: 'LLM batch sizes are often quoted in tokens, e.g. 4 M tokens per step.'
+  - id: o.betas
+    group: adam
+    level: 5
+    name: Adam hyper-parameters
+    tex: '\beta_{1} = 0.9, \quad \beta_{2} = 0.999, \quad \epsilon = 10^{-8}'
+    read: beta one, beta two, epsilon
+    meaning: '$\beta_1$ is the decay rate of the running mean of gradients, $\beta_2$ of the running mean of squared gradients. $\beta^{t}$ with a superscript $t$ is a power, used in bias correction.'
+    ai: 'LLM training often uses $\beta_2 = 0.95$ for stability.'
+  - id: o.convex_set
+    group: convergence
+    level: 5
+    name: Convex function
+    tex: 'f \text{ convex} \iff f(\lambda\mathbf{x} + (1 - \lambda)\mathbf{y}) \le \lambda f(\mathbf{x}) + (1 - \lambda) f(\mathbf{y}), \;\; \lambda \in [0, 1]'
+    read: f is convex if and only if f of a blend of x and y is at most the blend of f of x and f of y
+    meaning: 'The chord between any two points on the graph lies on or above the graph: a bowl with no dents. Every local minimum of a convex function is global.'
+    example: 'x^{2}, \; |x|, \; e^{x}, \; -\log x \text{ are convex}'
+    ai: 'Linear and logistic regression are convex; deep networks are not, but convex theory still explains a lot of optimizer behaviour.'
+  - id: o.lsmooth
+    group: convergence
+    level: 5
+    name: L-smooth (Lipschitz gradient)
+    tex: '\|\nabla f(\mathbf{x}) - \nabla f(\mathbf{y})\|_{2} \le L\,\|\mathbf{x} - \mathbf{y}\|_{2}'
+    read: the gradient of f is L-Lipschitz
+    meaning: 'The gradient cannot change faster than rate $L$. For twice-differentiable $f$ this means every Hessian eigenvalue is at most $L$ in size. Here $L$ is a constant, not the loss.'
+    ai: 'Sets the safe step size: gradient descent with $\eta \le 1/L$ always decreases the loss.'
+  - id: o.strong
+    group: convergence
+    level: 5
+    name: Strong convexity
+    tex: 'f(\mathbf{y}) \ge f(\mathbf{x}) + \nabla f(\mathbf{x})^{\top}(\mathbf{y} - \mathbf{x}) + \frac{\mu}{2}\|\mathbf{y} - \mathbf{x}\|_{2}^{2}'
+    read: f is mu-strongly convex
+    meaning: 'The function curves upward at least as much as a parabola with curvature $\mu$. Every Hessian eigenvalue is at least $\mu > 0$.'
+    ai: 'Adding L2 regularisation $\frac{\lambda}{2}\|\boldsymbol{\theta}\|^{2}$ to a convex loss makes it $\lambda$-strongly convex.'
+  - id: o.condition
+    group: convergence
+    level: 5
+    name: Condition number
+    tex: '\kappa = \frac{L}{\mu} = \frac{\lambda_{\max}(\mathbf{H})}{\lambda_{\min}(\mathbf{H})}'
+    read: kappa equals L over mu
+    meaning: 'The ratio of the steepest to the flattest curvature. A large $\kappa$ is a long narrow valley, where plain gradient descent zig-zags and is slow.'
+    ai: 'Momentum, Adam and normalisation layers all help by reducing the effective condition number.'
+  - id: o.rates
+    group: convergence
+    level: 5
+    name: Convergence rates
+    tex: '\mathcal{O}\big(1/\sqrt{T}\big), \quad \mathcal{O}(1/T), \quad \mathcal{O}(1/T^{2}), \quad \mathcal{O}\big(\rho^{T}\big) \; (\rho < 1)'
+    read: order one over root T; order one over T; order one over T squared; order rho to the T
+    meaning: 'How fast the error shrinks with the number of steps $T$. Sublinear rates (the first three) need about $1/\varepsilon^{2}$, $1/\varepsilon$ or $1/\sqrt{\varepsilon}$ steps to reach error $\varepsilon$; a linear rate $\rho^{T}$ needs only about $\log(1/\varepsilon)$.'
+    ai: 'SGD on convex problems: $1/\sqrt{T}$; gradient descent on smooth convex: $1/T$; Nesterov acceleration: $1/T^{2}$; strongly convex: linear.'
+  - id: o.stationary
+    group: landscape
+    level: 4
+    name: Stationary (critical) point
+    tex: '\nabla f(\mathbf{x}^{*}) = \mathbf{0}'
+    read: the gradient of f at x star is the zero vector
+    meaning: 'A flat point: a minimum, a maximum or a saddle. Gradient descent stops moving there.'
+    ai: 'Non-convex convergence results only promise $\|\nabla f\| \le \varepsilon$: an approximately stationary point.'
+  - id: o.sharpness
+    group: landscape
+    level: 5
+    name: Sharpness
+    tex: '\lambda_{\max}\big(\nabla^{2}\mathcal{L}(\boldsymbol{\theta})\big)'
+    read: lambda max of the Hessian of the loss
+    meaning: 'The curvature in the steepest direction. Flat minima (small sharpness) are thought to generalise better than sharp ones.'
+    ai: 'Sharpness-Aware Minimization (SAM) and the “edge of stability” phenomenon are both about this quantity.'
+
+equations:
+  - id: o.eq.parabola
+    group: minima
+    level: 3
+    name: Minimum of a parabola
+    tex: 'f(x) = a x^{2} + b x + c, \;\; a > 0 \quad\Rightarrow\quad x^{*} = -\frac{b}{2a}, \quad f(x^{*}) = c - \frac{b^{2}}{4a}'
+    read: for f of x equals a x squared plus b x plus c with a positive, the minimum is at x star equals minus b over 2 a
+    meaning: 'An upward parabola has one lowest point, the vertex. It is where the slope $2ax + b$ equals zero.'
+    terms:
+      - ['a > 0', 'opens upward, so there is a minimum']
+      - ['x^{*}', 'the minimiser (arg min)']
+      - ['f(x^{*})', 'the minimum value']
+    ai: 'Near a minimum, every smooth loss looks like a parabola; that local picture drives learning-rate theory.'
+  - id: o.eq.mse
+    group: minima
+    level: 3
+    name: Mean squared error
+    tex: '\operatorname{MSE} = \frac{1}{n}\sum_{i=1}^{n} \big(y_{i} - \hat{y}_{i}\big)^{2}'
+    read: M S E equals one over n times the sum over i of y i minus y hat i, squared
+    meaning: 'Average of the squared differences between true values and predictions. Squaring makes all errors positive and punishes big misses more.'
+    terms:
+      - ['y_i', 'true value']
+      - ['\hat{y}_i', 'prediction']
+      - ['(\cdot)^{2}', 'squared error']
+    ai: 'The loss for regression, value functions and diffusion noise prediction.'
+  - id: o.eq.argmin
+    group: minima
+    level: 4
+    name: Empirical risk minimisation
+    tex: '\boldsymbol{\theta}^{*} = \arg\min_{\boldsymbol{\theta}} \; \frac{1}{N}\sum_{i=1}^{N} \ell\big(f_{\boldsymbol{\theta}}(\mathbf{x}^{(i)}),\, y^{(i)}\big)'
+    read: theta star is the arg min over theta of the average loss over the training set
+    meaning: 'Choose the parameters with the smallest average loss on the training data. The average stands in for the true expected loss (the risk), which we cannot compute.'
+    terms:
+      - ['\ell', 'per-example loss, e.g. cross-entropy']
+      - ['f_{\boldsymbol{\theta}}(\mathbf{x}^{(i)})', 'model prediction']
+      - ['\frac{1}{N}\sum', 'empirical average over the dataset']
+    ai: 'The formal statement of “training a model”.'
+  - id: o.eq.gd
+    group: gd
+    level: 4
+    name: Gradient descent
+    tex: '\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_{t} - \eta\,\nabla_{\boldsymbol{\theta}}\mathcal{L}(\boldsymbol{\theta}_{t})'
+    read: theta t plus 1 equals theta t minus eta times the gradient of L at theta t
+    meaning: 'Take a small step downhill, in the direction opposite to the gradient, and repeat.'
+    terms:
+      - ['\boldsymbol{\theta}_{t}', 'current parameters']
+      - ['\eta', 'learning rate (step size)']
+      - ['-\nabla\mathcal{L}', 'steepest-descent direction']
+    ai: 'The basis of every neural-network optimizer.'
+  - id: o.eq.gd_descent
+    group: gd
+    level: 5
+    name: Descent lemma
+    tex: '\mathcal{L}(\boldsymbol{\theta}_{t+1}) \le \mathcal{L}(\boldsymbol{\theta}_{t}) - \eta\Big(1 - \frac{L\eta}{2}\Big)\big\|\nabla\mathcal{L}(\boldsymbol{\theta}_{t})\big\|_{2}^{2}'
+    read: the next loss is at most the current loss minus eta times one minus L eta over two times the squared gradient norm
+    meaning: 'For an $L$-smooth loss, a gradient step is guaranteed to lower the loss as long as $\eta < 2/L$. With $\eta = 1/L$, the loss drops by at least $\frac{1}{2L}\|\nabla\mathcal{L}\|^{2}$.'
+    terms:
+      - ['L', 'smoothness constant (maximum curvature)']
+      - ['1 - L\eta/2 > 0', 'requires $\eta < 2/L$']
+    ai: 'The first step of almost every convergence proof; explains why too large a learning rate makes the loss blow up.'
+  - id: o.eq.stable_lr
+    group: landscape
+    level: 5
+    name: Stable learning rate on a quadratic
+    tex: '\mathcal{L}(\boldsymbol{\theta}) = \tfrac{1}{2}\boldsymbol{\theta}^{\top}\mathbf{H}\boldsymbol{\theta}: \qquad \boldsymbol{\theta}_{t} = (\mathbf{I} - \eta\mathbf{H})^{t}\,\boldsymbol{\theta}_{0} \to \mathbf{0} \iff \eta < \frac{2}{\lambda_{\max}(\mathbf{H})}'
+    read: on a quadratic, gradient descent converges if and only if eta is less than two over the largest eigenvalue of H
+    meaning: 'Along each eigen-direction the error is multiplied by $1 - \eta\lambda_i$ every step. If any $|1 - \eta\lambda_i| > 1$, that direction explodes.'
+    terms:
+      - ['\mathbf{H}', 'Hessian (curvature)']
+      - ['1 - \eta\lambda_{i}', 'per-step factor in direction $i$']
+      - ['2/\lambda_{\max}', 'the edge of stability']
+    ai: 'Full-batch training drifts until sharpness sits right at $2/\eta$ (“edge of stability”, Cohen et al., 2021).'
+  - id: o.eq.sgd
+    group: sgd
+    level: 4
+    name: Stochastic gradient descent (SGD)
+    tex: '\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_{t} - \eta\,\frac{1}{|\mathcal{B}_{t}|}\sum_{i \in \mathcal{B}_{t}} \nabla_{\boldsymbol{\theta}}\,\ell\big(\mathbf{x}^{(i)}, y^{(i)}; \boldsymbol{\theta}_{t}\big)'
+    read: theta t plus 1 equals theta t minus eta times the average gradient over the minibatch
+    meaning: 'Use the average gradient of a small random batch instead of the whole dataset. It is a noisy but unbiased estimate, and far cheaper.'
+    terms:
+      - ['\mathcal{B}_{t}', 'random minibatch']
+      - ['\ell(\cdot; \boldsymbol{\theta})', 'per-example loss']
+      - ['\mathbb{E}[\hat{\mathbf{g}}] = \nabla\mathcal{L}', 'unbiased estimate of the full gradient']
+    ai: 'The gradient noise also helps escape saddle points and sharp minima.'
+  - id: o.eq.ema
+    group: sgd
+    level: 4
+    name: Exponential moving average
+    tex: 'm_{t} = \beta\, m_{t-1} + (1 - \beta)\, g_{t}'
+    read: m t equals beta m t minus 1 plus one minus beta times g t
+    meaning: 'A running average that forgets old values gradually. Each step keeps a fraction $\beta$ of the old average; it averages over roughly the last $\frac{1}{1 - \beta}$ values.'
+    terms:
+      - ['\beta', 'decay, e.g. 0.9 ≈ last 10 steps, 0.999 ≈ last 1000']
+      - ['(1 - \beta)\,g_t', 'weight on the newest value']
+    ai: 'Adam’s moments, BatchNorm running statistics and EMA copies of weights all use this formula.'
+  - id: o.eq.momentum
+    group: sgd
+    level: 5
+    name: SGD with momentum
+    tex: '\mathbf{v}_{t+1} = \mu\,\mathbf{v}_{t} + \mathbf{g}_{t}, \qquad \boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_{t} - \eta\,\mathbf{v}_{t+1}'
+    read: v t plus 1 equals mu v t plus g t; theta t plus 1 equals theta t minus eta v t plus 1
+    meaning: 'Keep a velocity that accumulates past gradients, like a heavy ball rolling downhill. Consistent directions speed up; zig-zags cancel out.'
+    terms:
+      - ['\mathbf{v}', 'velocity (running sum of gradients)']
+      - ['\mu', 'momentum, typically 0.9']
+    ai: 'This is PyTorch’s form. With $\mu = 0.9$ the effective step is about $10\eta$ in a steady direction.'
+    cite: 'Polyak, 1964; Sutskever et al., 2013'
+  - id: o.eq.adam
+    group: adam
+    level: 5
+    name: Adam
+    tex: '\begin{aligned} \mathbf{m}_{t} &= \beta_{1}\mathbf{m}_{t-1} + (1 - \beta_{1})\,\mathbf{g}_{t} \\ \mathbf{v}_{t} &= \beta_{2}\mathbf{v}_{t-1} + (1 - \beta_{2})\,\mathbf{g}_{t}^{2} \\ \hat{\mathbf{m}}_{t} &= \mathbf{m}_{t} / (1 - \beta_{1}^{t}), \qquad \hat{\mathbf{v}}_{t} = \mathbf{v}_{t} / (1 - \beta_{2}^{t}) \\ \boldsymbol{\theta}_{t} &= \boldsymbol{\theta}_{t-1} - \eta\,\hat{\mathbf{m}}_{t} / \big(\sqrt{\hat{\mathbf{v}}_{t}} + \epsilon\big) \end{aligned}'
+    read: m t is a moving average of gradients; v t is a moving average of squared gradients; divide each by one minus beta to the t; step by eta times m hat over root v hat plus epsilon
+    meaning: 'Momentum (the first moment $\mathbf{m}$) sets the direction; the running average of squared gradients (second moment $\mathbf{v}$) sets a separate step size for each parameter, so rarely-updated or low-gradient weights still move.'
+    terms:
+      - ['\mathbf{g}_{t}^{2}', 'element-wise square']
+      - ['1 - \beta^{t}', 'bias correction ($\beta^t$ is a power; the moments start at 0)']
+      - ['\sqrt{\hat{\mathbf{v}}_t}', 'per-parameter scale of recent gradients']
+      - ['\epsilon', 'avoids division by zero']
+    ai: 'The default optimizer of deep learning. Each step moves each weight by roughly $\eta$ at most, regardless of the gradient’s scale.'
+    cite: 'Kingma & Ba, “Adam: A Method for Stochastic Optimization”, 2015'
+  - id: o.eq.bias_correction
+    group: adam
+    level: 5
+    name: Why Adam corrects bias
+    tex: '\mathbf{m}_{t} = (1 - \beta_{1})\sum_{s=1}^{t} \beta_{1}^{\,t-s}\,\mathbf{g}_{s} \quad\Rightarrow\quad \mathbb{E}[\mathbf{m}_{t}] = (1 - \beta_{1}^{t})\,\mathbb{E}[\mathbf{g}] \;\;\text{(if the gradient distribution is stationary)}'
+    read: m t is a weighted sum of past gradients whose weights add to one minus beta one to the t
+    meaning: 'Starting the average at zero makes early estimates too small. The weights sum to $1 - \beta_1^{t}$, so dividing by it fixes the average.'
+    terms:
+      - ['\beta_{1}^{\,t-s}', 'older gradients fade geometrically']
+      - ['1 - \beta_{1}^{t}', 'total weight so far; tends to 1 as $t$ grows']
+    ai: 'Without the correction for $\mathbf{v}$ (with $\beta_2 = 0.999$), the first steps would be about 30 times too large.'
+  - id: o.eq.adamw
+    group: adam
+    level: 5
+    name: AdamW (decoupled weight decay)
+    tex: '\boldsymbol{\theta}_{t} = \boldsymbol{\theta}_{t-1} - \eta_{t}\left( \frac{\hat{\mathbf{m}}_{t}}{\sqrt{\hat{\mathbf{v}}_{t}} + \epsilon} + \lambda\,\boldsymbol{\theta}_{t-1} \right)'
+    read: theta t equals theta t minus 1 minus eta t times the Adam step plus lambda theta t minus 1
+    meaning: 'Shrink the weights directly by $\lambda$ at each step, outside the adaptive scaling. Putting L2 into the loss instead would divide the decay by $\sqrt{\hat{\mathbf{v}}}$ and weaken it for large-gradient weights.'
+    terms:
+      - ['\lambda\,\boldsymbol{\theta}_{t-1}', 'decoupled weight decay (e.g. $\lambda = 0.1$)']
+      - ['\eta_{t}', 'scheduled learning rate, which also scales the decay']
+    ai: 'The standard optimizer for training Transformers and LLMs.'
+    cite: 'Loshchilov & Hutter, “Decoupled Weight Decay Regularization”, 2019'
+  - id: o.eq.warmup
+    group: schedules
+    level: 5
+    name: Linear warm-up
+    tex: '\eta_{t} = \eta_{\max}\cdot\min\!\Big(1, \frac{t}{T_{\text{warm}}}\Big)'
+    read: eta t equals eta max times the minimum of one and t over T warm
+    meaning: 'Start with a tiny learning rate and ramp up linearly for the first $T_{\text{warm}}$ steps. Early on Adam’s $\hat{\mathbf{v}}$ is noisy and the weights are in a sharp region, so large steps diverge.'
+    terms:
+      - ['T_{\text{warm}}', 'warm-up length, e.g. 2,000 steps']
+      - ['\eta_{\max}', 'peak learning rate']
+    ai: 'Used for almost all Transformer training.'
+  - id: o.eq.cosine
+    group: schedules
+    level: 5
+    name: Cosine decay
+    tex: '\eta_{t} = \eta_{\min} + \frac{1}{2}\big(\eta_{\max} - \eta_{\min}\big)\left(1 + \cos\!\Big(\frac{t}{T}\,\pi\Big)\right)'
+    read: eta t equals eta min plus one half of eta max minus eta min times one plus cosine of t over T times pi
+    meaning: 'Glide the learning rate from $\eta_{\max}$ at $t = 0$ down to $\eta_{\min}$ at $t = T$ along half a cosine wave: slow at first, fastest in the middle, gentle at the end.'
+    terms:
+      - ['\cos(0) = 1', 'start: $\eta = \eta_{\max}$']
+      - ['\cos(\pi) = -1', 'end: $\eta = \eta_{\min}$']
+      - ['T', 'total number of decay steps']
+    ai: 'The most common LLM schedule (after warm-up), often with $\eta_{\min} = 0.1\,\eta_{\max}$.'
+    cite: 'Loshchilov & Hutter, “SGDR”, 2017'
+  - id: o.eq.inv_sqrt
+    group: schedules
+    level: 5
+    name: The original Transformer schedule
+    tex: '\eta_{t} = d_{\text{model}}^{-0.5}\cdot\min\!\big(t^{-0.5},\; t\cdot T_{\text{warm}}^{-1.5}\big)'
+    read: eta t equals d model to the minus one half times the minimum of t to the minus one half and t times T warm to the minus three halves
+    meaning: 'Linear warm-up for $T_{\text{warm}}$ steps, then decay proportional to $1/\sqrt{t}$. The two branches meet at $t = T_{\text{warm}}$.'
+    terms:
+      - ['t \cdot T_{\text{warm}}^{-1.5}', 'rising branch (warm-up)']
+      - ['t^{-0.5}', 'falling branch (inverse square root)']
+    ai: 'Vaswani et al. used $T_{\text{warm}} = 4000$; inverse-square-root decay is still used for open-ended training.'
+    cite: 'Vaswani et al., 2017'
+  - id: o.eq.gd_rate
+    group: convergence
+    level: 5
+    name: Gradient descent rate (smooth convex)
+    tex: 'f(\mathbf{x}_{T}) - f^{*} \le \frac{L\,\|\mathbf{x}_{0} - \mathbf{x}^{*}\|_{2}^{2}}{2T} = \mathcal{O}\Big(\frac{1}{T}\Big) \qquad (\eta = 1/L)'
+    read: the gap between f of x T and the optimum is at most L times the squared starting distance over 2 T
+    meaning: 'On a convex, $L$-smooth function, the excess loss after $T$ steps shrinks like $1/T$: ten times more steps, ten times smaller gap.'
+    terms:
+      - ['f^{*}', 'optimal value']
+      - ['\|\mathbf{x}_{0} - \mathbf{x}^{*}\|', 'distance from the start to a solution']
+      - ['\mathcal{O}(1/T)', 'sublinear rate']
+    ai: 'The baseline that accelerated and adaptive methods are measured against.'
+  - id: o.eq.linear_rate
+    group: convergence
+    level: 5
+    name: Linear convergence (strongly convex)
+    tex: '\|\mathbf{x}_{T} - \mathbf{x}^{*}\|_{2}^{2} \le \Big(1 - \frac{\mu}{L}\Big)^{T}\,\|\mathbf{x}_{0} - \mathbf{x}^{*}\|_{2}^{2} = \Big(1 - \frac{1}{\kappa}\Big)^{T}\,\|\mathbf{x}_{0} - \mathbf{x}^{*}\|_{2}^{2}'
+    read: the squared distance to the optimum after T steps is at most one minus mu over L to the T times the starting squared distance
+    meaning: 'With strong convexity the error shrinks by a constant factor every step: geometric (“linear”) convergence. The factor is close to 1, so progress is slow, when the condition number $\kappa$ is large.'
+    terms:
+      - ['\mu', 'strong-convexity constant (minimum curvature)']
+      - ['L', 'smoothness (maximum curvature)']
+      - ['\kappa = L/\mu', 'condition number: about $\kappa\log(1/\varepsilon)$ steps are needed']
+    ai: 'Why preconditioning (Adam, Shampoo, normalisation) matters: it reduces $\kappa$.'
+  - id: o.eq.sgd_rate
+    group: convergence
+    level: 5
+    name: SGD rate (convex, noisy gradients)
+    tex: '\mathbb{E}\big[f(\bar{\mathbf{x}}_{T})\big] - f^{*} \le \frac{R\,G}{\sqrt{T}}, \qquad \eta = \frac{R}{G\sqrt{T}}, \qquad \bar{\mathbf{x}}_{T} = \frac{1}{T}\sum_{t=1}^{T}\mathbf{x}_{t}'
+    read: the expected gap of the averaged iterate is at most R G over root T
+    meaning: 'With noisy gradients the rate drops to $1/\sqrt{T}$: to halve the error you need four times as many steps. The step size has to shrink to cancel the noise.'
+    terms:
+      - ['R', 'distance from start to solution']
+      - ['G', 'bound on the stochastic gradient norm']
+      - ['\bar{\mathbf{x}}_{T}', 'average of the iterates (Polyak averaging)']
+    ai: 'Motivates learning-rate decay at the end of training and weight averaging (EMA, SWA).'
+  - id: o.eq.nonconvex
+    group: convergence
+    level: 5
+    name: Non-convex guarantee
+    tex: '\min_{0 \le t < T} \big\|\nabla f(\mathbf{x}_{t})\big\|_{2}^{2} \le \frac{2L\,\big(f(\mathbf{x}_{0}) - f^{*}\big)}{T} \qquad (\eta = 1/L)'
+    read: the smallest squared gradient norm over T steps is at most 2 L times the initial gap over T
+    meaning: 'For non-convex losses, gradient descent can only promise to find a nearly flat point (small gradient), not the global minimum.'
+    terms:
+      - ['\|\nabla f\|^{2}', 'stationarity measure']
+      - ['f(\mathbf{x}_0) - f^{*}', 'how far the start is from the best value']
+    ai: 'The kind of guarantee proved for Adam-style methods on neural networks.'
+  - id: o.eq.taylor2
+    group: landscape
+    level: 5
+    name: Quadratic model of the loss
+    tex: '\mathcal{L}(\boldsymbol{\theta} + \boldsymbol{\delta}) \approx \mathcal{L}(\boldsymbol{\theta}) + \nabla\mathcal{L}(\boldsymbol{\theta})^{\top}\boldsymbol{\delta} + \frac{1}{2}\,\boldsymbol{\delta}^{\top}\mathbf{H}\,\boldsymbol{\delta}'
+    read: L of theta plus delta is approximately L of theta plus the gradient transpose delta plus one half delta transpose H delta
+    meaning: 'Near the current weights the loss looks like a bowl (or saddle) described by the gradient and the Hessian.'
+    terms:
+      - ['\nabla\mathcal{L}^{\top}\boldsymbol{\delta}', 'first-order change (slope)']
+      - ['\frac{1}{2}\boldsymbol{\delta}^{\top}\mathbf{H}\boldsymbol{\delta}', 'second-order change (curvature)']
+    ai: 'Minimising this model gives Newton’s step $\boldsymbol{\delta} = -\mathbf{H}^{-1}\nabla\mathcal{L}$; pruning methods (Optimal Brain Surgeon, GPTQ) use it to predict the damage from removing or rounding weights.'
+  - id: o.eq.second_order
+    group: landscape
+    level: 5
+    name: Classifying a stationary point
+    tex: '\nabla f(\mathbf{x}^{*}) = \mathbf{0} \text{ and } \begin{cases} \nabla^{2} f(\mathbf{x}^{*}) \succ 0 & \text{local minimum} \\ \nabla^{2} f(\mathbf{x}^{*}) \prec 0 & \text{local maximum} \\ \text{eigenvalues of both signs} & \text{saddle point} \end{cases}'
+    read: at a point with zero gradient, a positive definite Hessian means a minimum, negative definite a maximum, mixed signs a saddle
+    meaning: 'The Hessian’s eigenvalues are the curvatures along its eigen-directions. Up in every direction: a minimum. Up in some and down in others: a saddle.'
+    terms:
+      - ['\succ 0', 'all eigenvalues positive']
+      - ['\text{mixed}', 'a saddle, the most common critical point in high dimensions']
+    ai: 'In networks with millions of parameters most critical points are saddles, and noisy SGD escapes them.'
+  - id: o.eq.sam
+    group: landscape
+    level: 5
+    name: Sharpness-aware minimization (SAM)
+    tex: '\min_{\boldsymbol{\theta}} \; \max_{\|\boldsymbol{\epsilon}\|_{2} \le \rho} \mathcal{L}(\boldsymbol{\theta} + \boldsymbol{\epsilon}), \qquad \hat{\boldsymbol{\epsilon}} = \rho\,\frac{\nabla\mathcal{L}(\boldsymbol{\theta})}{\|\nabla\mathcal{L}(\boldsymbol{\theta})\|_{2}}'
+    read: minimise over theta the worst loss within a ball of radius rho around theta
+    meaning: 'Look for weights whose whole neighbourhood has low loss, which is a flat minimum. In practice, take one step up the gradient to find the worst nearby point, and use the gradient there.'
+    terms:
+      - ['\rho', 'neighbourhood radius']
+      - ['\hat{\boldsymbol{\epsilon}}', 'first-order approximation of the worst perturbation']
+    ai: 'Costs two gradient computations per step and often improves generalisation.'
+    cite: 'Foret et al., 2021'
+  - id: o.eq.clip
+    group: regularization
+    level: 5
+    name: Gradient-norm clipping
+    tex: '\mathbf{g} \leftarrow \mathbf{g}\cdot\min\!\Big(1, \frac{c}{\|\mathbf{g}\|_{2}}\Big)'
+    read: g gets g times the minimum of one and c over the norm of g
+    meaning: 'If the gradient is longer than $c$, shrink it to length $c$ while keeping its direction; otherwise leave it alone.'
+    terms:
+      - ['c', 'clipping threshold, often 1.0']
+      - ['\|\mathbf{g}\|_{2}', 'global norm over all parameters']
+    ai: 'Protects LLM training from rare loss spikes; standard in RNN training too.'
+  - id: o.eq.l2
+    group: regularization
+    level: 4
+    name: L2 regularisation
+    tex: '\mathcal{L}_{\text{reg}}(\boldsymbol{\theta}) = \mathcal{L}(\boldsymbol{\theta}) + \frac{\lambda}{2}\|\boldsymbol{\theta}\|_{2}^{2} \quad\Rightarrow\quad \nabla\mathcal{L}_{\text{reg}} = \nabla\mathcal{L} + \lambda\boldsymbol{\theta}'
+    read: the regularised loss equals the loss plus lambda over two times the squared norm of theta
+    meaning: 'Penalise large weights. Its gradient adds $\lambda\boldsymbol{\theta}$, which pulls every weight toward zero (“weight decay”).'
+    terms:
+      - ['\lambda', 'regularisation strength']
+      - ['\frac{1}{2}', 'chosen so the gradient is simply $\lambda\boldsymbol{\theta}$']
+    ai: 'For plain SGD this equals weight decay; for Adam it does not, hence AdamW.'
+  - id: o.eq.dropout
+    group: regularization
+    level: 5
+    name: Inverted dropout
+    tex: '\tilde{\mathbf{h}} = \frac{\mathbf{m} \odot \mathbf{h}}{1 - p}, \qquad m_{i} \overset{\text{iid}}{\sim} \operatorname{Bernoulli}(1 - p)'
+    read: h tilde equals the mask times h, divided by one minus p
+    meaning: 'During training, zero each activation with probability $p$ and scale the survivors up so that the expected value is unchanged: $\mathbb{E}[\tilde{\mathbf{h}}] = \mathbf{h}$.'
+    terms:
+      - ['\mathbf{m}', 'random 0/1 mask']
+      - ['p', 'drop probability, e.g. 0.1']
+      - ['1/(1-p)', 'rescaling, so nothing changes at test time']
+    ai: 'Used in the original Transformer; many LLM pretraining runs now set $p = 0$.'
+    cite: 'Srivastava et al., 2014'

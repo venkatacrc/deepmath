@@ -1,0 +1,688 @@
+# Text fields may contain inline math between $…$. `tex`, `example` and term symbols are KaTeX.
+notation:
+  # ---- Numbers & operations ----
+  - id: f.times
+    group: numbers
+    level: 1
+    name: Three ways to write multiplication
+    tex: 'a \times b \;=\; a \cdot b \;=\; ab'
+    read: a times b
+    meaning: >-
+      All three mean multiply. School books use $\times$; papers prefer $\cdot$ or simply writing the
+      letters side by side ($ab$), because $\times$ is kept for sizes such as $3 \times 4$ and for the
+      cross product.
+    example: '3 \cdot 4 = 12, \qquad 2x \text{ means } 2 \cdot x'
+    ai: 'When a paper writes $\mathbf{W}\mathbf{x}$ with nothing in between, it means “$\mathbf{W}$ multiplied by $\mathbf{x}$”.'
+  - id: f.frac
+    group: numbers
+    level: 1
+    name: Fraction bar (division)
+    tex: '\frac{a}{b} \;=\; a / b \;=\; a \div b'
+    read: a over b
+    meaning: >-
+      A fraction bar means divide the top (numerator) by the bottom (denominator). Papers almost never
+      use $\div$; they write $\frac{a}{b}$ in displayed formulas and $a/b$ inline.
+    example: '\frac{3}{4} = 0.75'
+    ai: 'Averages are written with a fraction: $\frac{1}{N}$ in front of a sum means “divide the total by $N$”.'
+  - id: f.power
+    group: numbers
+    level: 1
+    name: Power (exponent)
+    tex: 'a^{n}'
+    read: a to the power n, or a to the n
+    meaning: 'Multiply $a$ by itself $n$ times. $a^2$ is “a squared”, $a^3$ is “a cubed”.'
+    example: '2^{3} = 2 \cdot 2 \cdot 2 = 8, \qquad 2^{10} = 1024'
+    ai: 'A 16-bit number can take $2^{16} = 65{,}536$ different values; an 8-bit one only $2^{8} = 256$.'
+  - id: f.sqrt
+    group: numbers
+    level: 1
+    name: Square root
+    tex: '\sqrt{x}'
+    read: the square root of x
+    meaning: 'The number that, multiplied by itself, gives $x$. It undoes squaring.'
+    example: '\sqrt{64} = 8 \quad\text{because}\quad 8^{2} = 64'
+    ai: 'Transformer attention divides by $\sqrt{d_k}$, the square root of the key size, to keep scores from growing too large.'
+  - id: f.compare
+    group: numbers
+    level: 1
+    name: Comparison signs
+    tex: 'a < b, \quad a \le b, \quad a > b, \quad a \ge b, \quad a \ne b'
+    read: a is less than b; less than or equal to; greater than; greater than or equal to; not equal to
+    meaning: >-
+      The open side of $<$ faces the bigger number. A line underneath ($\le$, $\ge$) allows equality.
+      Papers write $\le$ and $\ge$; you may also see $\leq$ and $\geq$, which are the same symbols.
+    example: '3 < 5, \qquad 5 \le 5, \qquad 3 \ne 5'
+    ai: 'Bounds in theory papers are chains of $\le$: “the error is at most …”.'
+  - id: f.approx
+    group: numbers
+    level: 1
+    name: Approximately equal
+    tex: '\pi \approx 3.14159'
+    read: pi is approximately 3.14159
+    meaning: '$\approx$ means “close to but not exactly”. $\sim$ is sometimes used the same way, but in probability it means “is distributed as”.'
+    example: '\frac{1}{3} \approx 0.333'
+    ai: 'Training in BF16 stores each weight only approximately: $\operatorname{bf16}(w) \approx w$.'
+  - id: f.negexp
+    group: numbers
+    level: 2
+    name: Negative exponent
+    tex: 'a^{-n} = \frac{1}{a^{n}}'
+    read: a to the minus n equals one over a to the n
+    meaning: 'A negative power means “one divided by” the positive power. $10^{-3}$ is one thousandth.'
+    example: '10^{-3} = \frac{1}{1000} = 0.001'
+    ai: 'Learning rates are written like $\eta = 3 \times 10^{-4}$ (read “three times ten to the minus four”), which code writes as 3e-4.'
+  - id: f.percent
+    group: numbers
+    level: 1
+    name: Percent
+    tex: '45\% = \frac{45}{100} = 0.45'
+    read: forty-five percent
+    meaning: '“Per cent” means “out of 100”. To turn a fraction into a percent, multiply by 100.'
+    example: '\frac{9}{10} = 90\%'
+    ai: 'Benchmark scores such as “accuracy 87.3%” are fractions of correct answers, times 100.'
+
+  - id: f.negative
+    group: numbers
+    level: 1
+    name: Negative numbers and the number line
+    tex: '-3 < -1 < 0 < 2 < 5'
+    read: minus three is less than minus one, which is less than zero, which is less than two, which is less than five
+    meaning: 'Numbers to the left of zero on the number line are negative. Further left means smaller, so $-3$ is less than $-1$.'
+    example: '5 - 8 = -3, \qquad (-2) \times (-3) = 6'
+    ai: 'Weights and logits can be negative. A negative logit means “less likely than average”.'
+  - id: f.ratio
+    group: numbers
+    level: 1
+    name: Ratio
+    tex: 'a : b \;=\; \frac{a}{b}'
+    read: a to b
+    meaning: 'Compares two amounts by division. $3 : 1$ means “three for every one”.'
+    example: '80 : 20 = 4 : 1'
+    ai: 'Datasets are split 80 : 20 into training and test sets; the FFN is usually 4 : 1 wider than the model dimension.'
+  - id: f.coordinates
+    group: numbers
+    level: 2
+    name: Coordinates of a point
+    tex: '(x, y)'
+    read: the point x comma y
+    meaning: 'A point in the plane: go $x$ steps right (left if negative), then $y$ steps up (down if negative). Order matters: $(2, 5) \ne (5, 2)$.'
+    example: '(3, -2): \text{ 3 right, 2 down}'
+    ai: 'A point with two coordinates is a 2-D vector. Embeddings are the same idea with hundreds or thousands of coordinates.'
+
+  # ---- Variables & expressions ----
+  - id: f.variable
+    group: algebra
+    level: 2
+    name: Variable
+    tex: 'x, \; y, \; n, \; w'
+    read: x, y, n, w
+    meaning: 'A letter stands for a number that is unknown, or that can change. Algebra is the rules for working with such letters.'
+    example: '3x + 2 = 11 \;\Rightarrow\; x = 3'
+    ai: 'A network’s weights $w$ are variables: training searches for the values that make the loss small.'
+  - id: f.subscript
+    group: algebra
+    level: 2
+    name: Subscript (index)
+    tex: 'x_{i}'
+    read: x sub i
+    meaning: >-
+      A small letter below and to the right picks one item from a list: $x_1$ is the first, $x_2$ the second,
+      $x_i$ “the $i$-th”. It is a label, not a calculation.
+    example: '\mathbf{x} = (4, 7, 1): \quad x_1 = 4,\; x_2 = 7,\; x_3 = 1'
+    ai: 'In language models $x_t$ is the token at position $t$, and $w_{ij}$ is the weight in row $i$, column $j$.'
+  - id: f.superscript_index
+    group: algebra
+    level: 4
+    name: Parenthesised superscript (example index)
+    tex: 'x^{(i)}, \quad \mathbf{W}^{(l)}'
+    read: x superscript i; W superscript l
+    meaning: >-
+      A superscript in parentheses is a label, not a power: $x^{(i)}$ is the $i$-th training example and
+      $\mathbf{W}^{(l)}$ the weight matrix of layer $l$. The parentheses are there so you do not read it as $x$ to
+      the $i$.
+    example: '\mathcal{D} = \{(\mathbf{x}^{(1)}, y^{(1)}), \ldots, (\mathbf{x}^{(N)}, y^{(N)})\}'
+    ai: 'Dataset notation in almost every ML paper, following Goodfellow et al., *Deep Learning*.'
+  - id: f.define
+    group: algebra
+    level: 4
+    name: Is defined as
+    tex: 'a := b, \quad a \triangleq b, \quad a \equiv b'
+    read: a is defined as b
+    meaning: >-
+      $:=$ introduces a new name; it is not a claim to be checked. The colon sits on the side of the new name.
+      $\triangleq$ and $\equiv$ are older ways of writing the same thing ($\equiv$ can also mean “identically equal”).
+    example: '\bar{x} := \frac{1}{n}\sum_{i=1}^{n} x_i'
+    ai: 'Papers write things like $\mathbf{h}_t := f(\mathbf{h}_{t-1}, \mathbf{x}_t)$ to name the hidden state.'
+  - id: f.propto
+    group: algebra
+    level: 4
+    name: Proportional to
+    tex: 'y \propto x'
+    read: y is proportional to x
+    meaning: '$y = c\,x$ for some constant $c$ that is not written, because it does not matter for the argument.'
+    example: 'p(\theta \mid \mathcal{D}) \propto p(\mathcal{D} \mid \theta)\, p(\theta)'
+    ai: 'Bayesian posteriors and softmax probabilities ($p_i \propto e^{z_i}$) are usually written with $\propto$.'
+  - id: f.implies
+    group: algebra
+    level: 3
+    name: Implies / if and only if
+    tex: 'A \Rightarrow B, \qquad A \iff B'
+    read: A implies B; A if and only if B
+    meaning: '$\Rightarrow$: whenever $A$ is true, $B$ is true. $\iff$: $A$ and $B$ are always both true or both false.'
+    example: 'x = 3 \Rightarrow x^{2} = 9, \qquad x^{2} = 9 \not\Rightarrow x = 3'
+    ai: 'Optimality conditions: $\mathbf{x}^*$ is a minimum of a convex $f$ $\iff$ $\nabla f(\mathbf{x}^*) = \mathbf{0}$.'
+
+  # ---- Functions ----
+  - id: f.function
+    group: functions
+    level: 2
+    name: Function
+    tex: 'f(x)'
+    read: f of x
+    meaning: 'A rule that takes an input $x$ and gives exactly one output. The brackets mean “apply $f$ to”, not multiply.'
+    example: 'f(x) = 2x + 1, \qquad f(3) = 7'
+    ai: 'A neural network is a function $f_{\boldsymbol{\theta}}(\mathbf{x})$: input $\mathbf{x}$, parameters $\boldsymbol{\theta}$, output a prediction.'
+  - id: f.mapping
+    group: functions
+    level: 4
+    name: Function signature
+    tex: 'f : \mathbb{R}^{n} \to \mathbb{R}^{m}'
+    read: f maps R n to R m
+    meaning: 'Says what goes in and what comes out: $f$ takes a list of $n$ real numbers and returns a list of $m$ real numbers.'
+    example: 'f(\mathbf{x}) = \mathbf{W}\mathbf{x}, \quad \mathbf{W} \in \mathbb{R}^{m \times n}'
+    ai: 'A linear layer with 768 inputs and 3072 outputs is $f : \mathbb{R}^{768} \to \mathbb{R}^{3072}$.'
+  - id: f.mapsto
+    group: functions
+    level: 4
+    name: Maps to (for one element)
+    tex: 'x \mapsto x^{2}'
+    read: x maps to x squared
+    meaning: '$\to$ connects sets (domain to codomain); $\mapsto$ (with a bar) connects a single input to its output. It defines a function without naming it.'
+    example: 'f : \mathbb{R} \to \mathbb{R}, \quad x \mapsto \max(0, x)'
+    ai: 'Activation functions are often introduced this way, for example $x \mapsto x\,\sigma(x)$ for SiLU.'
+  - id: f.compose
+    group: functions
+    level: 3
+    name: Composition
+    tex: '(g \circ f)(x) = g(f(x))'
+    read: g composed with f of x, or g after f
+    meaning: 'Apply $f$ first, then $g$ to the result. Read right to left: the function nearest $x$ runs first.'
+    example: 'f(x) = x + 1,\; g(x) = x^{2}: \quad (g \circ f)(2) = 9'
+    ai: 'A deep network is a composition of layers: $f = f_L \circ \cdots \circ f_2 \circ f_1$.'
+  - id: f.exp
+    group: functions
+    level: 3
+    name: Exponential function
+    tex: 'e^{x} = \exp(x), \quad e \approx 2.71828'
+    read: e to the x, or exp of x
+    meaning: '$e$ is a fixed number, about 2.718. $e^{x}$ is always positive and grows faster and faster. $\exp(x)$ is the same thing, used when the exponent is long.'
+    example: 'e^{0} = 1, \qquad e^{1} \approx 2.718, \qquad e^{-1} \approx 0.368'
+    ai: 'Softmax turns any scores into positive numbers with $e^{z_i}$.'
+  - id: f.log
+    group: functions
+    level: 3
+    name: Logarithm
+    tex: '\log x, \quad \ln x, \quad \log_{2} x'
+    read: log of x; natural log of x; log base 2 of x
+    meaning: >-
+      The logarithm undoes the power: $\log_b x = y$ means $b^{y} = x$. In ML papers a plain $\log$ is almost
+      always the natural log (base $e$, also written $\ln$). $\log_2$ counts in bits.
+    example: '\log_{2} 8 = 3, \qquad \ln e = 1, \qquad \log 1 = 0'
+    ai: 'Losses are written with logs of probabilities, $-\log p$, which turns products of probabilities into sums.'
+  - id: f.max
+    group: functions
+    level: 2
+    name: Maximum and minimum
+    tex: '\max(a, b), \quad \min(a, b)'
+    read: max of a and b; min of a and b
+    meaning: 'The larger (or smaller) of the values. With a subscript, $\max_{i} x_i$ is the largest entry of a list.'
+    example: '\max(0, -2) = 0, \qquad \max(0, 5) = 5'
+    ai: 'ReLU, the most common activation, is $\max(0, x)$.'
+  - id: f.argmax
+    group: functions
+    level: 4
+    name: Arg max / arg min
+    tex: '\arg\max_{x} f(x), \quad \arg\min_{x} f(x)'
+    read: the arg max over x of f of x
+    meaning: >-
+      $\max$ gives the largest value; $\arg\max$ gives the input where it happens. It answers “which one?”,
+      not “how big?”.
+    example: 'f = (0.1, 0.7, 0.2): \quad \max_i f_i = 0.7, \quad \arg\max_i f_i = 2'
+    ai: 'Greedy decoding picks $\arg\max_{v} p(v \mid x_{<t})$; training picks $\boldsymbol{\theta}^* = \arg\min_{\boldsymbol{\theta}} \mathcal{L}(\boldsymbol{\theta})$.'
+  - id: f.floor
+    group: functions
+    level: 3
+    name: Floor, ceiling and rounding
+    tex: '\lfloor x \rfloor, \quad \lceil x \rceil, \quad \lfloor x \rceil'
+    read: floor of x; ceiling of x; x rounded to the nearest integer
+    meaning: 'Floor rounds down, ceiling rounds up. The mixed bracket $\lfloor x \rceil$ is used in quantization papers for round-to-nearest.'
+    example: '\lfloor 2.7 \rfloor = 2, \quad \lceil 2.1 \rceil = 3, \quad \lfloor 2.5 \rceil = 2 \text{ (ties to even)}'
+    ai: 'Quantization maps a weight to an integer with $\lfloor w / s \rceil$.'
+  - id: f.indicator
+    group: functions
+    level: 4
+    name: Indicator function
+    tex: '\mathbb{I}[\text{condition}], \quad \mathbf{1}[\text{condition}]'
+    read: indicator of the condition
+    meaning: 'Equals 1 when the condition is true and 0 when it is false. It turns a yes/no question into a number you can add up.'
+    example: '\mathbb{I}[3 > 2] = 1, \qquad \sum_{i} \mathbb{I}[\hat{y}_i = y_i] = \text{number correct}'
+    ai: 'Accuracy is $\frac{1}{N}\sum_{i} \mathbb{I}[\hat{y}_i = y_i]$; the ReLU derivative is $\mathbb{I}[x > 0]$.'
+
+  # ---- Sets & logic ----
+  - id: f.set
+    group: sets
+    level: 2
+    name: Set
+    tex: 'A = \{1, 2, 3\}'
+    read: A is the set containing 1, 2 and 3
+    meaning: 'Curly braces list a collection of distinct things. Order does not matter and nothing repeats.'
+    example: '\{3, 1, 2\} = \{1, 2, 3\}'
+    ai: 'A tokenizer’s vocabulary is a set $\mathcal{V}$ of tokens.'
+  - id: f.in
+    group: sets
+    level: 3
+    name: Element of
+    tex: 'x \in A, \quad x \notin A'
+    read: x is in A; x is not in A
+    meaning: '$\in$ (a rounded E, for “element”) says $x$ belongs to $A$. It is also how papers state types: $\mathbf{x} \in \mathbb{R}^{d}$.'
+    example: '2 \in \{1, 2, 3\}, \qquad 5 \notin \{1, 2, 3\}'
+    ai: '$\mathbf{W} \in \mathbb{R}^{d \times k}$ reads “W is a d by k matrix of real numbers”.'
+  - id: f.numbersets
+    group: sets
+    level: 3
+    name: Number sets
+    tex: '\mathbb{N} \subset \mathbb{Z} \subset \mathbb{Q} \subset \mathbb{R}'
+    read: the naturals, integers, rationals, reals (blackboard bold N, Z, Q, R)
+    meaning: >-
+      $\mathbb{N}$ = counting numbers, $\mathbb{Z}$ = integers (with negatives), $\mathbb{Q}$ = fractions,
+      $\mathbb{R}$ = all real numbers (every point on the number line).
+    example: '-3 \in \mathbb{Z}, \quad \tfrac{1}{2} \in \mathbb{Q}, \quad \sqrt{2} \in \mathbb{R}'
+    ai: 'Weights live in $\mathbb{R}$; token ids are in $\{0, 1, \ldots, |\mathcal{V}| - 1\} \subset \mathbb{N}$.'
+  - id: f.subset
+    group: sets
+    level: 3
+    name: Subset
+    tex: 'A \subseteq B, \quad A \subset B'
+    read: A is a subset of B
+    meaning: 'Every element of $A$ is also in $B$. $\subset$ usually means a proper subset (smaller than $B$), but some authors use it for $\subseteq$.'
+    example: '\{1, 2\} \subseteq \{1, 2, 3\}'
+    ai: 'A minibatch is a subset of the training set: $\mathcal{B} \subseteq \mathcal{D}$.'
+  - id: f.unionintersect
+    group: sets
+    level: 3
+    name: Union and intersection
+    tex: 'A \cup B, \quad A \cap B'
+    read: A union B; A intersect B
+    meaning: '$\cup$ (a cup) collects everything in either set. $\cap$ (a cap) keeps only what is in both.'
+    example: '\{1,2\} \cup \{2,3\} = \{1,2,3\}, \qquad \{1,2\} \cap \{2,3\} = \{2\}'
+    ai: 'In probability, $A \cap B$ is the event that both happen, $A \cup B$ that at least one does.'
+  - id: f.setbuilder
+    group: sets
+    level: 4
+    name: Set-builder notation
+    tex: '\{\, x \in \mathbb{R} : x > 0 \,\}'
+    read: the set of x in R such that x is greater than 0
+    meaning: 'Describes a set by a rule. The colon (or a vertical bar $\mid$) is read “such that”.'
+    example: '\{\, n \in \mathbb{N} : n \text{ is even} \,\} = \{0, 2, 4, \ldots\}'
+    ai: 'Top-$p$ sampling keeps the set $\{ v : v \text{ is among the most likely tokens whose total probability reaches } p \}$.'
+  - id: f.quantifiers
+    group: sets
+    level: 4
+    name: For all / there exists
+    tex: '\forall x, \quad \exists x'
+    read: for all x; there exists an x
+    meaning: '$\forall$ (upside-down A) claims something for every $x$. $\exists$ (backwards E) claims there is at least one $x$.'
+    example: '\forall x \in \mathbb{R}: x^{2} \ge 0, \qquad \exists x \in \mathbb{R}: x^{2} = 2'
+    ai: 'Smoothness assumptions in convergence proofs start “$\forall \mathbf{x}, \mathbf{y}$: …”.'
+  - id: f.cartesian
+    group: sets
+    level: 4
+    name: Cartesian product and R to the n
+    tex: '\mathbb{R}^{n} = \underbrace{\mathbb{R} \times \cdots \times \mathbb{R}}_{n \text{ times}}'
+    read: R n is R times R, n times
+    meaning: '$A \times B$ is the set of all pairs $(a, b)$. $\mathbb{R}^{n}$ is all lists of $n$ real numbers, the space vectors live in.'
+    example: '(2, -1, 0.5) \in \mathbb{R}^{3}'
+    ai: 'An embedding table maps each token to a point in $\mathbb{R}^{d}$.'
+  - id: f.interval
+    group: sets
+    level: 3
+    name: Intervals
+    tex: '[a, b], \quad (a, b), \quad [a, b)'
+    read: closed interval a b; open interval a b; half-open interval
+    meaning: 'All real numbers between $a$ and $b$. A square bracket includes the end point, a round bracket leaves it out.'
+    example: '[0, 1] \text{ includes } 0 \text{ and } 1; \quad (0, 1) \text{ does not}'
+    ai: 'Probabilities are in $[0, 1]$; a sigmoid output is in $(0, 1)$; dropout rate $p \in [0, 1)$.'
+  - id: f.cardinality
+    group: sets
+    level: 3
+    name: Size of a set
+    tex: '|A|'
+    read: the size of A, or the cardinality of A
+    meaning: 'Bars around a set give the number of elements. Around a number, the same bars mean absolute value.'
+    example: '|\{a, b, c\}| = 3'
+    ai: 'The vocabulary size is $|\mathcal{V}|$, for example $|\mathcal{V}| = 50{,}257$ for GPT-2.'
+  - id: f.abs
+    group: sets
+    level: 1
+    name: Absolute value
+    tex: '|x|'
+    read: the absolute value of x
+    meaning: 'The distance of $x$ from zero, so it is never negative. It drops the minus sign.'
+    example: '|-3| = 3, \qquad |3| = 3'
+    ai: 'The L1 loss is $|y - \hat{y}|$; absmax quantization scales by $\max_i |x_i|$.'
+
+  # ---- Sums, products & indices ----
+  - id: f.dots
+    group: sums
+    level: 2
+    name: Ellipsis (and so on)
+    tex: 'x_{1}, x_{2}, \ldots, x_{n}, \qquad x_{1} + x_{2} + \cdots + x_{n}'
+    read: x one, x two, and so on up to x n
+    meaning: 'Dots mean “continue the pattern”. Low dots ($\ldots$) go between commas; centred dots ($\cdots$) go between $+$ or $\times$ signs; $\vdots$ and $\ddots$ fill columns and diagonals of matrices.'
+    example: '1 + 2 + \cdots + 100 = 5050'
+    ai: 'A sequence of $T$ tokens is written $x_1, \ldots, x_T$.'
+  - id: f.sum
+    group: sums
+    level: 3
+    name: Summation (sigma)
+    tex: '\sum_{i=1}^{n} x_{i}'
+    read: the sum from i equals 1 to n of x sub i
+    meaning: >-
+      Capital sigma means add. The bottom says where the counter $i$ starts, the top where it stops, and the
+      expression on the right is what to add for each $i$.
+    example: '\sum_{i=1}^{4} i = 1 + 2 + 3 + 4 = 10'
+    ai: 'Every weighted sum in a network, $\sum_{i} w_i x_i$, and every batch loss, $\frac{1}{N}\sum_{i} \ell_i$.'
+  - id: f.sum_set
+    group: sums
+    level: 4
+    name: Sum over a set
+    tex: '\sum_{x \in \mathcal{X}} f(x), \qquad \sum_{i \ne j} a_{ij}'
+    read: the sum over x in X of f of x; the sum over i not equal to j
+    meaning: 'Instead of start and stop numbers, the subscript can name a set or a condition. Add $f(x)$ for every $x$ that qualifies. A bare $\sum_{i}$ means “over all valid $i$”.'
+    example: '\sum_{x \in \{1, 2, 5\}} x^{2} = 1 + 4 + 25 = 30'
+    ai: 'Softmax normalises with $\sum_{j \in \mathcal{V}} e^{z_j}$, a sum over the whole vocabulary.'
+  - id: f.prod
+    group: sums
+    level: 3
+    name: Product (capital pi)
+    tex: '\prod_{i=1}^{n} x_{i}'
+    read: the product from i equals 1 to n of x sub i
+    meaning: 'Like $\sum$, but multiply instead of add.'
+    example: '\prod_{i=1}^{4} i = 1 \cdot 2 \cdot 3 \cdot 4 = 24 = 4!'
+    ai: 'The probability of a whole sentence is a product of next-token probabilities, $\prod_{t} p(x_t \mid x_{<t})$.'
+  - id: f.double_sum
+    group: sums
+    level: 4
+    name: Double sum
+    tex: '\sum_{i=1}^{m} \sum_{j=1}^{n} a_{ij}'
+    read: the sum over i from 1 to m of the sum over j from 1 to n of a i j
+    meaning: 'Add every entry of a table: for each row $i$, add across all columns $j$. Sometimes written $\sum_{i,j}$.'
+    example: '\sum_{i,j} \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}_{ij} = 10'
+    ai: 'The squared Frobenius norm $\|\mathbf{W}\|_F^{2} = \sum_{i,j} W_{ij}^{2}$ is a double sum; so is a loss over a batch of sequences.'
+  - id: f.prefix
+    group: sums
+    level: 5
+    name: Slices of a sequence
+    tex: 'x_{<t}, \quad x_{\le t}, \quad x_{1:T}'
+    read: x before t; x up to and including t; x from 1 to T
+    meaning: '$x_{<t}$ is every token before position $t$ (the context). $x_{1:T}$ is the whole sequence. Some papers write $x_{i:j}$ inclusive, like MATLAB, not like Python.'
+    example: 'x = (\text{The}, \text{cat}, \text{sat}): \quad x_{<3} = (\text{The}, \text{cat})'
+    ai: 'Language modeling: predict $x_t$ from $x_{<t}$.'
+
+  # ---- Greek letters ----
+  - id: f.greek_abg
+    group: greek
+    level: 3
+    name: Alpha, beta, gamma
+    tex: '\alpha, \quad \beta, \quad \gamma'
+    read: alpha, beta, gamma
+    meaning: 'The first Greek letters, used for constants and hyper-parameters (settings you choose, not weights the model learns).'
+    ai: '$\alpha$ is a learning rate or the LoRA scale; $\beta_1, \beta_2$ are Adam’s decay rates, $\beta$ the KL strength in RLHF and DPO; $\gamma, \beta$ are LayerNorm’s scale and shift; $\gamma$ is the RL discount factor.'
+  - id: f.greek_theta
+    group: greek
+    level: 3
+    name: Theta, phi, psi
+    tex: '\theta, \; \boldsymbol{\theta}, \quad \phi, \quad \psi'
+    read: theta, bold theta, phi, psi
+    meaning: '$\boldsymbol{\theta}$ (bold) usually means “all the model’s parameters”, gathered into one long vector. When there are two models, the second is often $\phi$ (the variant $\varphi$ is the same letter).'
+    ai: '$p_{\boldsymbol{\theta}}(\mathbf{x})$: the model with parameters $\boldsymbol{\theta}$. In a VAE the encoder is $q_{\phi}$ and the decoder $p_{\theta}$; in RLHF the policy is $\pi_{\theta}$ and the reward model $r_{\phi}$.'
+  - id: f.greek_eta
+    group: greek
+    level: 4
+    name: Eta, lambda, epsilon
+    tex: '\eta, \quad \lambda, \quad \epsilon, \; \varepsilon'
+    read: eta, lambda, epsilon
+    meaning: '$\eta$ (looks like an n with a tail) is the learning rate. $\lambda$ is a weighting factor or an eigenvalue. $\epsilon$ is a tiny number or random noise.'
+    ai: 'Adam divides by $\sqrt{\hat{v}_t} + \epsilon$ with $\epsilon = 10^{-8}$; weight decay has strength $\lambda$; diffusion models add noise $\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$.'
+  - id: f.greek_mu
+    group: greek
+    level: 3
+    name: Mu and sigma
+    tex: '\mu, \quad \sigma, \quad \sigma^{2}'
+    read: mu, sigma, sigma squared
+    meaning: '$\mu$ is a mean (average) and $\sigma$ a standard deviation (typical spread); $\sigma^2$ is the variance. Lower-case $\sigma(x)$ written as a function is the sigmoid.'
+    ai: 'LayerNorm subtracts $\mu$ and divides by $\sqrt{\sigma^2 + \epsilon}$. A Gaussian is $\mathcal{N}(\mu, \sigma^2)$.'
+  - id: f.greek_pi
+    group: greek
+    level: 4
+    name: Pi (three meanings)
+    tex: '\pi \approx 3.14159, \quad \pi_{\theta}(a \mid s), \quad \prod'
+    read: pi; pi theta of a given s; capital pi
+    meaning: 'Lower-case $\pi$ is the circle constant, or, in reinforcement learning, a policy: the probability of taking action $a$ in state $s$. Capital $\prod$ is a product.'
+    ai: 'In RLHF the language model is the policy $\pi_{\theta}(y \mid x)$ and the frozen starting model is $\pi_{\text{ref}}$.'
+  - id: f.greek_capitals
+    group: greek
+    level: 4
+    name: Sigma, Delta, and the nabla
+    tex: '\Sigma, \; \boldsymbol{\Sigma}, \quad \Delta, \quad \nabla'
+    read: capital sigma, bold Sigma, capital delta, nabla (del)
+    meaning: '$\sum$ (large) is a sum, but $\boldsymbol{\Sigma}$ as a matrix is a covariance matrix or the singular values in an SVD. $\Delta$ is “change in”. $\nabla$ (nabla, read “del” or “grad”) is not Greek: it is the gradient.'
+    ai: '$\Delta\mathbf{W}$ is a weight update (LoRA learns $\Delta\mathbf{W} = \mathbf{B}\mathbf{A}$); $\nabla_{\boldsymbol{\theta}}\mathcal{L}$ is the gradient of the loss.'
+  - id: f.greek_tau
+    group: greek
+    level: 5
+    name: Tau, rho, kappa, delta, xi
+    tex: '\tau, \quad \rho, \quad \kappa, \quad \delta, \quad \xi'
+    read: tau, rho, kappa, delta, xi
+    meaning: '$\tau$: a temperature or a trajectory. $\rho$: a correlation, a ratio, or the spectral radius. $\kappa$: a condition number. $\delta$: a small change or an error signal. $\xi$: a random variable or noise.'
+    ai: 'Sampling temperature $\tau$ divides the logits; PPO clips the probability ratio $\rho_t = \pi_\theta / \pi_{\text{old}}$; backprop passes errors $\boldsymbol{\delta}^{(l)}$.'
+
+  # ---- Paper conventions ----
+  - id: f.fonts
+    group: papers
+    level: 4
+    name: Scalar, vector, matrix, tensor
+    tex: 'x, \quad \mathbf{x}, \quad \mathbf{X}, \quad \mathsf{X}'
+    read: scalar x, vector bold x, matrix bold capital X, tensor sans-serif X
+    meaning: >-
+      The typeface tells you the kind of object: italic lower-case for a single number, bold lower-case for a
+      vector, bold capital for a matrix, sans-serif for higher-order tensors. Many Transformer papers skip the bold
+      and write $Q, K, V$, so check the paper’s notation section.
+    example: 'x_i \in \mathbb{R}, \quad \mathbf{x} \in \mathbb{R}^{d}, \quad \mathbf{X} \in \mathbb{R}^{n \times d}, \quad \mathsf{X} \in \mathbb{R}^{B \times n \times d}'
+    ai: 'Follows the notation page of Goodfellow, Bengio & Courville, *Deep Learning* (2016), which most papers copy.'
+  - id: f.hat
+    group: papers
+    level: 4
+    name: Hat (estimate)
+    tex: '\hat{y}, \quad \hat{\boldsymbol{\theta}}'
+    read: y hat; theta hat
+    meaning: 'A hat marks an estimate or a prediction, as opposed to the true value. $\hat{y}$ is what the model says; $y$ is the label.'
+    example: '\text{error} = y - \hat{y}'
+    ai: 'Adam’s bias-corrected moments are $\hat{m}_t$ and $\hat{v}_t$; the MLE is $\hat{\boldsymbol{\theta}}_{\text{MLE}}$.'
+  - id: f.star
+    group: papers
+    level: 4
+    name: Star (optimal)
+    tex: '\boldsymbol{\theta}^{*}, \quad \mathbf{x}^{*}, \quad f^{*}'
+    read: theta star
+    meaning: 'A star superscript means the best, or true, value: the minimiser of a loss or the optimal value. (In complex numbers it means the conjugate.)'
+    example: 'x^{*} = \arg\min_{x} (x - 3)^{2} = 3, \quad f^{*} = 0'
+    ai: 'Convergence rates bound $f(\mathbf{x}_T) - f^{*}$: how far the loss after $T$ steps is from the best possible.'
+  - id: f.tilde
+    group: papers
+    level: 5
+    name: Tilde and bar (modified versions)
+    tex: '\tilde{\mathbf{x}}, \quad \bar{\mathbf{x}}, \quad \mathbf{x}^{\prime}'
+    read: x tilde; x bar; x prime
+    meaning: >-
+      Decorations mark a related but different version of $\mathbf{x}$. A tilde usually means noisy, perturbed or
+      approximate; a bar means an average (or, in autodiff papers, an adjoint); a prime means a second or updated
+      copy. Always check how the paper defines them.
+    example: '\tilde{\mathbf{x}} = \mathbf{x} + \boldsymbol{\epsilon}, \qquad \bar{x} = \tfrac{1}{n}\textstyle\sum_i x_i'
+    ai: 'A denoising autoencoder reconstructs $\mathbf{x}$ from $\tilde{\mathbf{x}}$; DDPM uses $\bar{\alpha}_t = \prod_{s \le t} \alpha_s$.'
+  - id: f.calligraphic
+    group: papers
+    level: 4
+    name: Calligraphic letters
+    tex: '\mathcal{L}, \quad \mathcal{D}, \quad \mathcal{V}, \quad \mathcal{N}, \quad \mathcal{O}'
+    read: script L, script D, script V, script N, script O (or big O)
+    meaning: 'Curly capitals name special objects rather than numbers: $\mathcal{L}$ a loss (or likelihood), $\mathcal{D}$ a dataset, $\mathcal{V}$ a vocabulary, $\mathcal{N}$ the normal distribution, $\mathcal{O}$ big-O.'
+    ai: '“$\mathcal{L}_{\text{CE}}$ on $\mathcal{D}$ over $\mathcal{V}$” = cross-entropy loss on the dataset over the vocabulary.'
+  - id: f.bigO
+    group: papers
+    level: 4
+    name: Big-O notation
+    tex: '\mathcal{O}(n^{2})'
+    read: big O of n squared, or order n squared
+    meaning: 'How fast a cost grows as $n$ gets large, ignoring constant factors. Doubling $n$ roughly quadruples an $\mathcal{O}(n^{2})$ cost.'
+    example: '3n^{2} + 5n + 7 = \mathcal{O}(n^{2})'
+    ai: 'Self-attention costs $\mathcal{O}(n^{2} d)$ for sequence length $n$, which is why long context is expensive.'
+  - id: f.param_semicolon
+    group: papers
+    level: 5
+    name: Parameters after a semicolon or in a subscript
+    tex: 'p(\mathbf{x}; \boldsymbol{\theta}) \;=\; p_{\boldsymbol{\theta}}(\mathbf{x})'
+    read: p of x, parameterised by theta
+    meaning: >-
+      What comes after the semicolon (or in the subscript) are fixed parameters, not random variables. Compare
+      $p(\mathbf{x} \mid \boldsymbol{\theta})$, which treats $\boldsymbol{\theta}$ as a random variable you condition on
+      (the Bayesian view).
+    ai: '$f(\mathbf{x}; \boldsymbol{\theta})$ and $f_{\boldsymbol{\theta}}(\mathbf{x})$ both mean “network $f$ with weights $\boldsymbol{\theta}$ applied to $\mathbf{x}$”.'
+  - id: f.operatorname
+    group: papers
+    level: 4
+    name: Named operators in upright type
+    tex: '\operatorname{softmax}(\mathbf{z}), \quad \operatorname{LayerNorm}(\mathbf{x}), \quad \operatorname{tr}(\mathbf{A})'
+    read: softmax of z; layer norm of x; trace of A
+    meaning: 'Multi-letter function names are set upright so they are not misread as products of variables: $\operatorname{tr}$, not $t \cdot r$.'
+    ai: 'Transformer papers define blocks this way: $\operatorname{Attention}$, $\operatorname{FFN}$, $\operatorname{MultiHead}$.'
+
+equations:
+  - id: f.eq.order
+    group: numbers
+    level: 1
+    name: Order of operations
+    tex: '2 + 3 \times 4^{2} = 2 + 3 \times 16 = 2 + 48 = 50'
+    read: two plus three times four squared equals fifty
+    meaning: 'Brackets first, then powers, then multiply and divide, then add and subtract. Every formula in every paper relies on this order.'
+    terms:
+      - ['4^{2}', 'powers are done first: 16']
+      - ['3 \times 16', 'then multiplication: 48']
+      - ['2 + 48', 'addition last: 50']
+    ai: 'In $\mathbf{W}\mathbf{x} + \mathbf{b}$ the multiplication happens before the addition, no brackets needed.'
+  - id: f.eq.distributive
+    group: numbers
+    level: 1
+    name: Distributive law
+    tex: 'a\,(b + c) = ab + ac'
+    read: a times the quantity b plus c equals a b plus a c
+    meaning: 'Multiplying a sum is the same as multiplying each part and then adding.'
+    terms:
+      - ['a\,(b + c)', 'multiply the whole bracket by $a$']
+      - ['ab + ac', 'same answer, done piece by piece']
+    ai: 'The same law holds for matrices, $\mathbf{W}(\mathbf{x} + \mathbf{y}) = \mathbf{W}\mathbf{x} + \mathbf{W}\mathbf{y}$, which is what makes a layer “linear”.'
+  - id: f.eq.area
+    group: numbers
+    level: 1
+    name: Area of a rectangle
+    tex: 'A = \ell \times w'
+    read: area equals length times width
+    meaning: 'A rectangle 4 squares long and 3 squares wide contains $4 \times 3 = 12$ unit squares.'
+    terms:
+      - ['\ell', 'length']
+      - ['w', 'width']
+    ai: 'A matrix is a rectangle of numbers: a $4096 \times 4096$ weight matrix holds $16{,}777{,}216$ weights.'
+  - id: f.eq.percent_change
+    group: numbers
+    level: 2
+    name: Percent change
+    tex: '\text{percent change} = \frac{\text{new} - \text{old}}{\text{old}} \times 100\%'
+    read: percent change equals new minus old, over old, times one hundred percent
+    meaning: 'How much something grew or shrank compared with where it started. A negative answer is a decrease.'
+    terms:
+      - ['\text{new} - \text{old}', 'the change']
+      - ['\div\,\text{old}', 'compared with the starting value']
+    ai: 'If the loss falls from 2.50 to 2.20, it dropped by $\frac{2.20 - 2.50}{2.50} = -12\%$.'
+  - id: f.eq.evaluate
+    group: algebra
+    level: 2
+    name: Evaluating an expression
+    tex: 'f(x) = 3x^{2} - 2x + 1, \qquad f(2) = 3 \cdot 4 - 4 + 1 = 9'
+    read: f of x equals three x squared minus two x plus one; f of two equals nine
+    meaning: 'Replace every $x$ with the number, then follow the order of operations.'
+    terms:
+      - ['x = 2', 'the input being substituted']
+      - ['3x^{2} = 3 \cdot 4', 'powers first, then multiply']
+    ai: 'A forward pass is exactly this: substitute the input into the network’s formula and compute.'
+  - id: f.eq.line
+    group: algebra
+    level: 2
+    name: Equation of a line
+    tex: 'y = m x + b'
+    read: y equals m x plus b
+    meaning: 'A straight line: $m$ is the slope (how much $y$ goes up when $x$ goes up by 1) and $b$ is where the line crosses the $y$-axis.'
+    terms:
+      - ['m', 'slope, the weight']
+      - ['b', 'intercept, the bias']
+      - ['x', 'input']
+      - ['y', 'output']
+    ai: 'A single neuron without its activation is exactly this: output = weight × input + bias. Scaled up it becomes $\mathbf{y} = \mathbf{W}\mathbf{x} + \mathbf{b}$.'
+  - id: f.eq.exp_rules
+    group: algebra
+    level: 2
+    name: Exponent rules
+    tex: 'a^{m} a^{n} = a^{m+n}, \qquad \frac{a^{m}}{a^{n}} = a^{m-n}, \qquad (a^{m})^{n} = a^{mn}'
+    read: a to the m times a to the n equals a to the m plus n; a to the m over a to the n equals a to the m minus n; a to the m, all to the n, equals a to the m n
+    meaning: 'Multiplying powers of the same base adds the exponents; dividing subtracts them; a power of a power multiplies them.'
+    terms:
+      - ['a^{m} a^{n}', 'same base multiplied']
+      - ['a^{m+n}', 'exponents added']
+    ai: 'Floating-point multiplication adds exponents; softmax uses $e^{z_i - m} = e^{z_i}/e^{m}$ to stay numerically safe.'
+  - id: f.eq.log_rules
+    group: functions
+    level: 3
+    name: Logarithm rules
+    tex: '\log(ab) = \log a + \log b, \qquad \log\frac{a}{b} = \log a - \log b, \qquad \log a^{k} = k \log a'
+    read: log of a b equals log a plus log b; log of a over b equals log a minus log b; log of a to the k equals k log a
+    meaning: 'Logs turn multiplication into addition and division into subtraction.'
+    terms:
+      - ['\log(ab)', 'log of a product']
+      - ['\log a + \log b', 'sum of logs']
+    ai: 'Why every likelihood is maximised in log form: $\log \prod_i p(x_i) = \sum_i \log p(x_i)$. A product of thousands of small probabilities would underflow; a sum of logs does not.'
+  - id: f.eq.neuron
+    group: sums
+    level: 3
+    name: A neuron’s weighted sum
+    tex: 'z = \sum_{i=1}^{n} w_{i} x_{i} + b, \qquad a = \phi(z)'
+    read: z equals the sum from i equals 1 to n of w i x i, plus b; a equals phi of z
+    meaning: 'Multiply each input by its weight, add them up, add the bias, then pass the total through an activation function $\phi$.'
+    terms:
+      - ['x_i', 'the $i$-th input']
+      - ['w_i', 'the weight on that input']
+      - ['b', 'bias']
+      - ['z', 'pre-activation (the weighted total)']
+      - ['\phi', 'activation function, e.g. ReLU']
+      - ['a', 'the neuron’s output, its activation']
+    ai: 'The basic unit of every network. Doing all the neurons of a layer at once is a matrix multiplication.'
+  - id: f.eq.composition
+    group: papers
+    level: 4
+    name: A network as a composition
+    tex: 'f_{\boldsymbol{\theta}}(\mathbf{x}) = \left(f^{(L)} \circ f^{(L-1)} \circ \cdots \circ f^{(1)}\right)(\mathbf{x})'
+    read: f theta of x equals f L after f L minus 1 after … after f 1, applied to x
+    meaning: 'A deep network applies layer 1 first, then layer 2, and so on up to layer $L$. The layer nearest $\mathbf{x}$ runs first.'
+    terms:
+      - ['f^{(l)}', 'layer $l$, with its own weights $\mathbf{W}^{(l)}$']
+      - ['\circ', 'composition: feed one output into the next']
+      - ['\boldsymbol{\theta}', 'all layers’ weights together']
+    ai: 'Backpropagation is the chain rule applied to this composition, from layer $L$ back to layer 1.'

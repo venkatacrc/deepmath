@@ -1,0 +1,472 @@
+notation:
+  # ---- Number representation ----
+  - id: n.sci
+    group: representation
+    level: 2
+    name: Scientific notation
+    tex: '6.02 \times 10^{23}, \qquad 3 \times 10^{-4} = \texttt{3e-4}'
+    read: six point oh two times ten to the twenty-three; three times ten to the minus four
+    meaning: 'A number between 1 and 10 times a power of ten. The power says how many places to move the decimal point. Code writes the power after an “e”.'
+    example: '12{,}300 = 1.23 \times 10^{4}, \qquad 0.0005 = 5 \times 10^{-4}'
+    ai: 'Floating-point numbers are scientific notation in base 2: a significand times a power of two.'
+  - id: n.prefixes
+    group: representation
+    level: 2
+    name: Size prefixes
+    tex: '\text{k} = 10^{3}, \;\; \text{M} = 10^{6}, \;\; \text{G} = 10^{9}, \;\; \text{T} = 10^{12}, \;\; \text{P} = 10^{15}; \qquad \text{KiB} = 2^{10}, \;\; \text{GiB} = 2^{30}'
+    read: kilo, mega, giga, tera, peta; kibibyte, gibibyte
+    meaning: 'Thousand, million, billion, trillion, quadrillion. Memory is sometimes counted in powers of two instead: 1 GiB = 1,073,741,824 bytes, about 7% more than 1 GB.'
+    ai: 'A “7B” model has $7 \times 10^{9}$ parameters; a GPU might do $10^{15}$ FLOP/s (1 PFLOP/s) with 80 GB of memory.'
+  - id: n.bits_bytes
+    group: representation
+    level: 2
+    name: Bits and bytes
+    tex: '1 \text{ byte} = 8 \text{ bits}, \qquad n \text{ bits} \Rightarrow 2^{n} \text{ values}'
+    read: one byte is eight bits; n bits give two to the n values
+    meaning: 'A bit is a single 0 or 1. With $n$ bits you can write $2^{n}$ different patterns.'
+    example: '\text{INT8}: 2^{8} = 256 \text{ values, from } -128 \text{ to } 127'
+    ai: 'FP32 = 4 bytes, BF16/FP16 = 2 bytes, FP8/INT8 = 1 byte, INT4 = half a byte per number.'
+  - id: n.round_nearest
+    group: representation
+    level: 1
+    name: Rounding
+    tex: '3.14159 \approx 3.14, \qquad 2.5 \to 2 \text{ or } 3\,?'
+    read: three point one four one five nine is approximately three point one four
+    meaning: 'Keep the digits you need and round the last one: up if the next digit is 5 or more, down otherwise. Computers break exact ties (like 2.5) toward the even neighbour, so ties do not always round up.'
+    example: '7.46 \approx 7.5, \qquad 7.44 \approx 7.4'
+    ai: 'Every floating-point operation rounds its result, which is where numerical error comes from.'
+  - id: n.fl
+    group: error
+    level: 5
+    name: Floating-point rounding operator
+    tex: '\operatorname{fl}(x)'
+    read: f l of x, x rounded to floating point
+    meaning: 'The nearest representable floating-point number to the real number $x$. Error analysis writes computed results as $\operatorname{fl}(a + b)$ and so on.'
+    ai: '$\operatorname{fl}_{\text{bf16}}(w)$ is what a weight becomes when cast to BF16.'
+  - id: n.eps
+    group: float
+    level: 4
+    name: Machine epsilon
+    tex: '\epsilon_{\text{mach}} = 2^{-p}'
+    read: epsilon machine equals two to the minus p
+    meaning: 'The gap between 1 and the next larger floating-point number, where $p$ is the number of stored mantissa bits. It sets the relative precision of the format. (Some texts call half of it, the unit roundoff $u$, “epsilon”.)'
+    example: '\text{FP32}: 2^{-23} \approx 1.2 \times 10^{-7}, \quad \text{FP16}: 2^{-10} \approx 9.8 \times 10^{-4}, \quad \text{BF16}: 2^{-7} \approx 7.8 \times 10^{-3}'
+    ai: 'BF16 is only accurate to about 2–3 decimal digits, which is why optimizer states are usually kept in FP32.'
+  - id: n.ulp
+    group: float
+    level: 5
+    name: Unit in the last place
+    tex: '\operatorname{ulp}(x) = 2^{\lfloor \log_{2}|x| \rfloor - p}'
+    read: u l p of x
+    meaning: 'The spacing between neighbouring floats near $x$. It doubles each time $|x|$ crosses a power of two, so absolute precision gets worse for big numbers.'
+    example: '\text{BF16}: \operatorname{ulp}(1) = 2^{-7}, \quad \operatorname{ulp}(256) = 2'
+    ai: 'A small update $\eta g$ is lost entirely if it is less than half an ulp of the weight it is added to.'
+  - id: n.formats
+    group: float
+    level: 4
+    name: Format names (sign, exponent, mantissa bits)
+    tex: '\underbrace{s}_{1}\;\underbrace{e_{1}\cdots e_{E}}_{E \text{ exponent bits}}\;\underbrace{m_{1}\cdots m_{M}}_{M \text{ mantissa bits}}'
+    read: one sign bit, E exponent bits, M mantissa bits
+    meaning: 'Exponent bits set the range (how big and how small); mantissa bits set the precision (how many significant digits).'
+    example: '\text{FP32}{:}\,(1, 8, 23) \quad \text{FP16}{:}\,(1, 5, 10) \quad \text{BF16}{:}\,(1, 8, 7) \quad \text{E4M3}{:}\,(1, 4, 3) \quad \text{E5M2}{:}\,(1, 5, 2)'
+    ai: 'BF16 keeps FP32’s 8 exponent bits, so it has the same range and rarely overflows, at the cost of precision.'
+  - id: n.fp8
+    group: float
+    level: 5
+    name: FP8 formats E4M3 and E5M2
+    tex: '\mathrm{E4M3}: \; \max = 448, \;\; \epsilon = 2^{-3} \qquad \mathrm{E5M2}: \; \max = 57{,}344, \;\; \epsilon = 2^{-2}'
+    read: E four M three, max 448; E five M two, max 57,344
+    meaning: '“E$x$M$y$” means $x$ exponent and $y$ mantissa bits. E4M3 has more precision; E5M2 has more range.'
+    ai: 'FP8 training usually stores weights and activations in E4M3 and gradients in E5M2, each tensor with its own scale factor.'
+  - id: n.int_ranges
+    group: quant
+    level: 4
+    name: Signed integer ranges
+    tex: '\text{INT}b: \; [-2^{b-1},\; 2^{b-1} - 1]'
+    read: a b-bit signed integer ranges from minus two to the b minus one up to two to the b minus one, minus one
+    meaning: 'Two’s-complement integers have one more negative value than positive. The spacing is always exactly 1, unlike floats.'
+    example: '\text{INT8}: [-128, 127], \qquad \text{INT4}: [-8, 7]'
+    ai: 'Symmetric quantization often uses only $[-127, 127]$ so that zero sits exactly in the middle.'
+  - id: n.clamp
+    group: quant
+    level: 4
+    name: Clamp (clip)
+    tex: '\operatorname{clamp}(x, a, b) = \min\big(\max(x, a),\, b\big)'
+    read: clamp x between a and b
+    meaning: 'Force $x$ into the interval $[a, b]$: values below $a$ become $a$, values above $b$ become $b$.'
+    example: '\operatorname{clamp}(300, -128, 127) = 127'
+    ai: 'Quantizers clamp to the integer range; outliers that get clamped cause large errors.'
+  - id: n.flops_units
+    group: efficiency
+    level: 4
+    name: FLOPs versus FLOP/s
+    tex: '\text{FLOPs} \;(\text{work}) \qquad \text{vs.} \qquad \text{FLOP/s} \;(\text{speed})'
+    read: floating-point operations, versus floating-point operations per second
+    meaning: 'FLOPs counts how much arithmetic a job needs; FLOP/s is how fast hardware can do it. Time ≈ FLOPs ÷ (FLOP/s × utilisation). One multiply-add counts as 2 FLOPs.'
+    ai: 'Model FLOPs Utilisation (MFU) is achieved FLOP/s divided by peak; 40–60% is good for LLM training.'
+  - id: n.bandwidth
+    group: efficiency
+    level: 5
+    name: Memory bandwidth
+    tex: '\beta \;[\text{bytes/s}], \qquad t_{\text{mem}} = \frac{\text{bytes moved}}{\beta}'
+    read: beta, the memory bandwidth; memory time equals bytes moved over bandwidth
+    meaning: 'How many bytes per second can travel between memory (HBM) and the compute units. If moving the data takes longer than computing on it, the job is memory-bound.'
+    ai: 'An H100 SXM has about 3.35 TB/s of HBM bandwidth but about 990 TFLOP/s of dense BF16 compute.'
+
+equations:
+  - id: n.eq.place_value
+    group: representation
+    level: 1
+    name: Place value
+    tex: '347 = 3 \times 10^{2} + 4 \times 10^{1} + 7 \times 10^{0} = 300 + 40 + 7'
+    read: three hundred forty-seven equals three times ten squared plus four times ten plus seven
+    meaning: 'Each digit is worth ten times the digit to its right. The position of a digit is its power of ten.'
+    terms:
+      - ['10^{2} = 100', 'hundreds place']
+      - ['10^{0} = 1', 'ones place']
+    ai: 'Computers do exactly the same thing in base 2, the binary system.'
+  - id: n.eq.binary
+    group: representation
+    level: 2
+    name: Binary numbers
+    tex: '1011_{2} = 1 \cdot 2^{3} + 0 \cdot 2^{2} + 1 \cdot 2^{1} + 1 \cdot 2^{0} = 11_{10}'
+    read: one zero one one in base two equals eleven in base ten
+    meaning: 'In base 2 each place is worth twice the place to its right, and the only digits are 0 and 1. The subscript names the base.'
+    terms:
+      - ['_{2}', 'base 2 (binary)']
+      - ['2^{3}, 2^{2}, 2^{1}, 2^{0}', 'place values 8, 4, 2, 1']
+    ai: 'Binary fractions work the same way: $0.101_2 = \frac{1}{2} + \frac{1}{8} = 0.625$. That is how the mantissa of a float is read.'
+  - id: n.eq.memory
+    group: representation
+    level: 3
+    name: Memory needed for a model’s weights
+    tex: '\text{memory} = N_{\text{params}} \times \frac{b}{8} \text{ bytes}'
+    read: memory equals the number of parameters times bits per parameter over eight bytes
+    meaning: 'Multiply the number of weights by the bytes each one takes.'
+    terms:
+      - ['N_{\text{params}}', 'number of parameters, e.g. $7 \times 10^{9}$']
+      - ['b', 'bits per parameter: 32, 16, 8 or 4']
+    ai: 'A 7B model needs 28 GB in FP32, 14 GB in BF16, 7 GB in INT8 and 3.5 GB in INT4, which is why quantization lets it run on a laptop.'
+  - id: n.eq.float_value
+    group: float
+    level: 4
+    name: Value of a floating-point number
+    tex: 'x = (-1)^{s} \times \Big(1 + \sum_{i=1}^{M} m_{i}\,2^{-i}\Big) \times 2^{\,e - \text{bias}}, \qquad \text{bias} = 2^{E-1} - 1'
+    read: x equals minus one to the s times one point m in binary times two to the e minus bias
+    meaning: 'Sign, then a significand between 1 and 2 (the leading 1 is implicit, not stored), then a power of two. The stored exponent is offset by a bias so that it can be negative.'
+    terms:
+      - ['s', 'sign bit']
+      - ['m_i', 'mantissa (fraction) bits']
+      - ['e', 'stored exponent; $e$ = all zeros is reserved for zero and subnormals, all ones for ∞/NaN in IEEE formats']
+      - ['\text{bias}', '127 for FP32/BF16, 15 for FP16, 7 for E4M3']
+    ai: 'Precision is relative: there are as many BF16 numbers between 1 and 2 as between 1024 and 2048.'
+  - id: n.eq.range
+    group: float
+    level: 4
+    name: Largest FP16 number
+    tex: 'x_{\max}^{\text{FP16}} = (2 - 2^{-10}) \times 2^{15} = 65{,}504'
+    read: the largest FP16 number is two minus two to the minus ten times two to the fifteen, which is 65,504
+    meaning: 'With only 5 exponent bits, FP16 overflows to infinity above 65,504. BF16 and FP32 go up to about $3.4 \times 10^{38}$.'
+    terms:
+      - ['2 - 2^{-10}', 'largest significand (all mantissa bits 1)']
+      - ['2^{15}', 'largest exponent ($30 - 15$)']
+    ai: 'Why FP16 training needs loss scaling and why $e^{12} \approx 162{,}755$ computed in FP16 becomes $\infty$.'
+  - id: n.eq.rel_error
+    group: error
+    level: 3
+    name: Absolute and relative error
+    tex: '\text{absolute error} = |\hat{x} - x|, \qquad \text{relative error} = \frac{|\hat{x} - x|}{|x|}'
+    read: absolute error is the size of x hat minus x; relative error is that divided by the size of x
+    meaning: 'Absolute error is how far off you are; relative error is how far off compared with the size of the true value. Floats keep the relative error small.'
+    terms:
+      - ['x', 'true value']
+      - ['\hat{x}', 'computed or approximate value']
+    ai: 'Being off by 1 matters for a weight of 0.5 but not for one of 10,000; quantization error is best judged relatively.'
+  - id: n.eq.fl_model
+    group: error
+    level: 5
+    name: Standard model of floating-point arithmetic
+    tex: '\operatorname{fl}(a \circ b) = (a \circ b)(1 + \delta), \qquad |\delta| \le u = \tfrac{1}{2}\epsilon_{\text{mach}}, \qquad \circ \in \{+, -, \times, \div\}'
+    read: the computed result of a op b equals the exact result times one plus delta, with delta at most the unit roundoff
+    meaning: 'Each basic operation is exact except for one final rounding, which has relative error at most $u$. Errors then build up over long chains of operations.'
+    terms:
+      - ['\delta', 'relative rounding error of this one operation']
+      - ['u', 'unit roundoff: $2^{-24}$ for FP32, $2^{-8}$ for BF16']
+    ai: 'A sum of $n$ numbers can have error around $n u$ in the worst case, which is why long dot products accumulate in FP32.'
+  - id: n.eq.swamping
+    group: error
+    level: 5
+    name: Swamping (small numbers lost in big ones)
+    tex: '\operatorname{fl}_{\text{bf16}}(256 + 1) = 256, \qquad \operatorname{fl}_{\text{fp32}}\big(1 + 10^{-8}\big) = 1'
+    read: in BF16, 256 plus 1 is 256; in FP32, one plus ten to the minus eight is one
+    meaning: 'When you add a small number to a large one, the small one can be rounded away entirely. BF16 has only 8 significant bits, so near 256 the spacing is 2 and adding 1 changes nothing.'
+    terms:
+      - ['\operatorname{ulp}_{\text{bf16}}(256) = 2', 'the gap between neighbouring BF16 values at 256']
+      - ['256 + 1', 'a tie, broken toward the even value 256']
+    ai: 'Why weights are updated in FP32 “master” copies: $\boldsymbol{\theta} - \eta\mathbf{g}$ in BF16 would often leave $\boldsymbol{\theta}$ unchanged.'
+  - id: n.eq.cancellation
+    group: error
+    level: 5
+    name: Catastrophic cancellation
+    tex: '\operatorname{Var}(x) = \mathbb{E}[x^{2}] - \big(\mathbb{E}[x]\big)^{2} \quad\text{is unstable when}\quad |\mathbb{E}[x]| \gg \operatorname{Std}(x)'
+    read: variance as E of x squared minus E of x, squared, is unstable when the mean is much larger than the spread
+    meaning: 'Subtracting two nearly equal rounded numbers cancels their leading digits and leaves mostly rounding error. The formula is exact on paper but can even return a negative variance.'
+    terms:
+      - ['\mathbb{E}[x^{2}] \approx (\mathbb{E}[x])^{2}', 'two big, nearly equal numbers']
+      - ['\text{fix}', 'subtract the mean first, or use Welford’s running algorithm']
+    ai: 'Normalisation kernels compute variance in FP32 with a stable (two-pass or Welford) method.'
+  - id: n.eq.condition
+    group: error
+    level: 5
+    name: Condition number of a problem
+    tex: '\kappa_{f}(x) = \left| \frac{x\,f^{\prime}(x)}{f(x)} \right| \approx \frac{\text{relative change in output}}{\text{relative change in input}}'
+    read: the condition number of f at x equals the absolute value of x f prime of x over f of x
+    meaning: 'How much a problem amplifies small relative errors in its input. A large $\kappa$ means the answer is sensitive no matter how carefully you compute it.'
+    terms:
+      - ['\kappa \approx 1', 'well-conditioned']
+      - ['\kappa \gg 1', 'ill-conditioned: expect to lose about $\log_{10}\kappa$ digits']
+    ai: 'For solving $\mathbf{A}\mathbf{x} = \mathbf{b}$ the analogue is $\kappa(\mathbf{A}) = \sigma_{\max}/\sigma_{\min}$, and it also slows optimizers.'
+  - id: n.eq.logsumexp
+    group: stability
+    level: 5
+    name: Log-sum-exp trick
+    tex: '\log\sum_{i=1}^{K} e^{z_{i}} = m + \log\sum_{i=1}^{K} e^{z_{i} - m}, \qquad m = \max_{i} z_{i}'
+    read: log of the sum of e to the z i equals m plus log of the sum of e to the z i minus m, where m is the largest z
+    meaning: 'Subtract the largest value before exponentiating. The biggest term becomes $e^{0} = 1$, so nothing overflows, and the answer is mathematically unchanged.'
+    terms:
+      - ['m', 'the maximum logit']
+      - ['z_i - m \le 0', 'every exponent is now at most 0']
+    ai: 'Used inside every cross-entropy and softmax kernel; without it, a logit of 100 overflows even in FP32 ($e^{100} \approx 2.7 \times 10^{43}$).'
+  - id: n.eq.stable_softmax
+    group: stability
+    level: 5
+    name: Shift-invariance of softmax
+    tex: '\operatorname{softmax}(\mathbf{z}) = \operatorname{softmax}(\mathbf{z} - c\,\mathbf{1}) \quad \text{for any } c \in \mathbb{R}'
+    read: softmax of z equals softmax of z minus c for any constant c
+    meaning: 'Adding the same constant to every logit multiplies top and bottom by $e^{-c}$, which cancels. So subtracting the max is free.'
+    terms:
+      - ['c = \max_i z_i', 'the choice that prevents overflow']
+    ai: 'Also why only the differences between logits matter.'
+  - id: n.eq.online_softmax
+    group: stability
+    level: 5
+    name: Online softmax (FlashAttention)
+    tex: 'm^{\text{new}} = \max(m, \tilde{m}), \qquad \ell^{\text{new}} = e^{m - m^{\text{new}}}\,\ell + e^{\tilde{m} - m^{\text{new}}}\,\tilde{\ell}'
+    read: the new running max is the max of the old and the block max; the new running sum rescales both sums to the new max
+    meaning: 'Softmax can be computed one block of scores at a time: keep a running maximum $m$ and a running sum $\ell$, and rescale the old sum whenever a larger maximum appears.'
+    terms:
+      - ['m, \ell', 'running max and running sum of $e^{z - m}$ so far']
+      - ['\tilde{m}, \tilde{\ell}', 'max and sum for the new block']
+    ai: 'Lets FlashAttention avoid ever writing the $n \times n$ score matrix to memory, turning attention from memory-bound to compute-bound.'
+    cite: 'Milakov & Gimelshein, 2018; Dao et al., “FlashAttention”, 2022'
+  - id: n.eq.loss_scaling
+    group: stability
+    level: 5
+    name: Loss scaling for FP16
+    tex: '\tilde{\mathcal{L}} = S \cdot \mathcal{L}, \qquad \mathbf{g} = \frac{1}{S}\,\nabla_{\boldsymbol{\theta}}\tilde{\mathcal{L}}'
+    read: scale the loss by S before backprop, then divide the gradients by S
+    meaning: 'Small gradients underflow to zero in FP16 (below about $6 \times 10^{-8}$). Multiplying the loss by $S$ shifts every gradient up into range; dividing afterwards (in FP32) restores the true values.'
+    terms:
+      - ['S', 'scale, e.g. $2^{16}$; halved when an overflow (inf/NaN) is detected, grown slowly otherwise']
+    ai: 'Dynamic loss scaling (`GradScaler`) is needed for FP16 but not for BF16, whose range matches FP32.'
+    cite: 'Micikevicius et al., “Mixed Precision Training”, 2018'
+  - id: n.eq.master_weights
+    group: stability
+    level: 5
+    name: Mixed-precision update with master weights
+    tex: '\boldsymbol{\theta}^{\text{fp32}} \leftarrow \boldsymbol{\theta}^{\text{fp32}} - \eta\,\mathbf{u}\big(\mathbf{g}^{\text{fp32}}\big), \qquad \boldsymbol{\theta}^{\text{bf16}} = \operatorname{fl}_{\text{bf16}}\big(\boldsymbol{\theta}^{\text{fp32}}\big)'
+    read: update the FP32 master weights, then cast them to BF16 for the next forward and backward pass
+    meaning: 'Compute in low precision but accumulate updates in high precision, so that small steps are not swamped.'
+    terms:
+      - ['\mathbf{u}(\cdot)', 'the optimizer step (e.g. Adam’s)']
+      - ['\operatorname{fl}_{\text{bf16}}', 'round to BF16']
+    ai: 'With Adam this costs about 16 bytes per parameter: 2 (BF16 weights) + 2 (grads) + 4 (master) + 4 + 4 (moments). A 7B model needs about 112 GB before activations.'
+  - id: n.eq.stochastic_rounding
+    group: stability
+    level: 5
+    name: Stochastic rounding
+    tex: '\operatorname{SR}(x) = \begin{cases} \lfloor x \rfloor & \text{with probability } 1 - (x - \lfloor x \rfloor) \\ \lfloor x \rfloor + 1 & \text{with probability } x - \lfloor x \rfloor \end{cases} \qquad \mathbb{E}[\operatorname{SR}(x)] = x'
+    read: stochastic rounding rounds up with probability equal to the fractional part
+    meaning: 'Round randomly, in proportion to how close $x$ is to each neighbour (here on a grid of spacing 1). On average there is no error, so many tiny updates add up correctly instead of being rounded away.'
+    terms:
+      - ['x - \lfloor x \rfloor', 'fractional part = chance of rounding up']
+      - ['\mathbb{E}[\operatorname{SR}(x)] = x', 'unbiased']
+    ai: 'Makes pure-BF16 or FP8 weight updates workable without FP32 master weights.'
+  - id: n.eq.rmsnorm
+    group: stability
+    level: 5
+    name: RMSNorm
+    tex: '\operatorname{RMSNorm}(\mathbf{x}) = \frac{\mathbf{x}}{\sqrt{\frac{1}{d}\sum_{i=1}^{d} x_{i}^{2} + \epsilon}} \odot \mathbf{g}'
+    read: RMS norm of x equals x divided by the root mean square of its entries plus epsilon, times the gain g
+    meaning: 'Rescale each token vector to unit root-mean-square size, then apply a learned per-feature gain. Cheaper than LayerNorm, with no mean subtraction.'
+    terms:
+      - ['\sqrt{\frac{1}{d}\sum x_i^{2}}', 'root mean square of the entries']
+      - ['\epsilon', 'guards against division by zero (e.g. $10^{-6}$)']
+      - ['\mathbf{g}', 'learned gain']
+    ai: 'Used in LLaMA and most modern LLMs. Implementations compute the sum of squares in FP32 even for BF16 inputs.'
+    cite: 'Zhang & Sennrich, 2019'
+  - id: n.eq.affine_quant
+    group: quant
+    level: 5
+    name: Affine (asymmetric) quantization
+    tex: 'q = \operatorname{clamp}\!\Big( \Big\lfloor \frac{x}{s} \Big\rceil + z,\; q_{\min},\; q_{\max} \Big), \qquad \hat{x} = s\,(q - z)'
+    read: q equals x over s rounded, plus z, clamped to the integer range; x hat equals s times q minus z
+    meaning: 'Map real numbers onto an integer grid with a scale $s$ (the grid spacing) and a zero-point $z$ (the integer that stands for 0.0). Dequantizing multiplies back.'
+    terms:
+      - ['s = \frac{x_{\max} - x_{\min}}{q_{\max} - q_{\min}}', 'scale (step size)']
+      - ['z = q_{\min} - \lfloor x_{\min}/s \rceil', 'zero-point']
+      - ['\lfloor \cdot \rceil', 'round to nearest']
+    ai: 'Standard for INT8 activations, which are often not centred on zero (e.g. after ReLU).'
+  - id: n.eq.absmax
+    group: quant
+    level: 5
+    name: Symmetric absmax quantization
+    tex: 's = \frac{\max_{i} |x_{i}|}{2^{b-1} - 1}, \qquad q_{i} = \Big\lfloor \frac{x_{i}}{s} \Big\rceil, \qquad \hat{x}_{i} = s\,q_{i}'
+    read: s equals the largest absolute value over two to the b minus one, minus one; q i is x i over s rounded
+    meaning: 'Scale so the largest magnitude maps to the largest integer (127 for INT8), with zero-point 0. Simple and fast, but a single outlier makes $s$ large and wastes resolution for all the other values.'
+    terms:
+      - ['\max_i |x_i| = \|\mathbf{x}\|_{\infty}', 'absmax of the tensor, row or block']
+      - ['2^{b-1} - 1', '127 for INT8, 7 for INT4']
+    ai: 'Per-channel or per-block scales (e.g. one scale per 64 or 128 weights) limit the damage from outliers.'
+  - id: n.eq.quant_error
+    group: quant
+    level: 5
+    name: Quantization noise
+    tex: 'e = x - \hat{x} \in \Big[-\frac{s}{2}, \frac{s}{2}\Big], \qquad \mathbb{E}[e^{2}] \approx \frac{s^{2}}{12}'
+    read: the rounding error is between minus s over 2 and s over 2, with mean square about s squared over 12
+    meaning: 'Rounding to a grid of spacing $s$ gives an error that behaves like uniform noise. Each extra bit halves $s$ and cuts the noise power by 4 (about 6 dB).'
+    terms:
+      - ['s', 'quantization step']
+      - ['s^{2}/12', 'variance of a uniform distribution of width $s$']
+    ai: 'Going from INT8 to INT4 makes the step 16 times coarser, which is why 4-bit methods need careful error compensation (GPTQ, AWQ).'
+  - id: n.eq.blockscale
+    group: quant
+    level: 5
+    name: Block (microscaling) formats
+    tex: 'x_{i} \approx s_{B}\cdot q_{i}, \quad i \in B, \qquad |B| = 32, \quad q_{i} \in \text{FP4 (E2M1)} = \{0, \pm 0.5, \pm 1, \pm 1.5, \pm 2, \pm 3, \pm 4, \pm 6\}'
+    read: each value is approximately the block scale times a 4-bit code
+    meaning: 'Split a tensor into small blocks that share one scale factor, and store each element in very few bits. Small blocks adapt to local magnitude, so outliers only hurt their own block.'
+    terms:
+      - ['s_{B}', 'shared scale for block $B$ (a power of two in MX formats)']
+      - ['q_i', 'low-precision element, here 4-bit floating point']
+    ai: 'MXFP8/MXFP4 (OCP spec) and NVFP4 (16-element blocks with FP8 scales) are supported in hardware on recent accelerators.'
+    cite: 'OCP Microscaling Formats (MX) Specification, 2023'
+  - id: n.eq.fp8_scale
+    group: quant
+    level: 5
+    name: Per-tensor FP8 scaling
+    tex: 's = \frac{\operatorname{amax}(\mathbf{X})}{448}, \qquad \mathbf{X}^{\text{fp8}} = \operatorname{fl}_{\text{E4M3}}\!\big(\mathbf{X} / s\big)'
+    read: s equals the absolute max of X over 448; store X over s in E4M3
+    meaning: 'Stretch the tensor so its largest value lands at the top of the E4M3 range (448), to use the format’s precision without overflowing. Keep $s$ in higher precision next to the FP8 data.'
+    terms:
+      - ['\operatorname{amax}', 'largest absolute value, often taken from a history of recent steps (“delayed scaling”)']
+      - ['448', 'largest finite E4M3 value']
+    ai: 'How FP8 training works on Hopper/Blackwell GPUs (Transformer Engine); DeepSeek-V3 used finer tile-wise scales.'
+    cite: 'Micikevicius et al., “FP8 Formats for Deep Learning”, 2022'
+  - id: n.eq.smoothquant
+    group: quant
+    level: 5
+    name: Migrating outliers (SmoothQuant)
+    tex: '\mathbf{Y} = \mathbf{X}\mathbf{W} = \big(\mathbf{X}\operatorname{diag}(\mathbf{s})^{-1}\big)\big(\operatorname{diag}(\mathbf{s})\,\mathbf{W}\big), \qquad s_{j} = \frac{\max|\mathbf{X}_{:,j}|^{\alpha}}{\max|\mathbf{W}_{j,:}|^{1-\alpha}}'
+    read: X W equals X times diag s inverse, times diag s times W
+    meaning: 'Divide each activation channel by $s_j$ and multiply the matching weight row by $s_j$. The product is unchanged, but activation outliers shrink, so both factors quantize well.'
+    terms:
+      - ['\operatorname{diag}(\mathbf{s})^{-1}\operatorname{diag}(\mathbf{s}) = \mathbf{I}', 'the rescaling cancels exactly']
+      - ['\alpha', 'how much difficulty to move from activations to weights, e.g. 0.5']
+    ai: 'LLM activations have a few channels up to 100× larger than the rest; this makes W8A8 inference accurate.'
+    cite: 'Xiao et al., “SmoothQuant”, 2023'
+  - id: n.eq.ste
+    group: quant
+    level: 5
+    name: Straight-through estimator
+    tex: '\text{forward: } \hat{x} = s\,\Big\lfloor \frac{x}{s} \Big\rceil, \qquad \text{backward: } \frac{\partial \hat{x}}{\partial x} := 1'
+    read: forward, round x to the grid; backward, pretend the rounding had derivative one
+    meaning: 'Rounding has zero gradient almost everywhere, so training through it would learn nothing. The STE passes the gradient straight through as if rounding were the identity.'
+    terms:
+      - ['\lfloor \cdot \rceil', 'true derivative is 0 (or undefined at jumps)']
+      - [':= 1', 'a deliberate approximation']
+    ai: 'The basis of quantization-aware training (QAT) and of binary/ternary networks; also used in VQ-VAE.'
+    cite: 'Bengio, Léonard & Courville, 2013'
+  - id: n.eq.matmul_flops
+    group: efficiency
+    level: 4
+    name: FLOPs of a matrix multiplication
+    tex: '\underset{m \times n}{\mathbf{A}}\;\underset{n \times p}{\mathbf{B}}: \qquad \text{FLOPs} = 2\,m\,n\,p'
+    read: multiplying an m by n matrix by an n by p matrix costs two m n p floating-point operations
+    meaning: 'Each of the $m p$ outputs is a dot product of length $n$: $n$ multiplies and about $n$ adds.'
+    terms:
+      - ['m\,p', 'number of outputs']
+      - ['2n', 'one multiply and one add per term']
+    ai: 'A forward pass costs about $2N$ FLOPs per token for a model with $N$ parameters, since every weight is used in one multiply-add.'
+  - id: n.eq.train_flops
+    group: efficiency
+    level: 5
+    name: Training compute
+    tex: 'C \approx 6\,N\,D'
+    read: compute C is approximately six times N times D
+    meaning: 'Total training FLOPs ≈ 6 × parameters × training tokens: 2 for the forward pass and 4 for the backward pass (which computes gradients for both activations and weights).'
+    terms:
+      - ['N', 'number of parameters']
+      - ['D', 'number of training tokens']
+      - ['6 = 2 + 4', 'forward + backward']
+    ai: 'A 7B model on 2T tokens needs about $6 \times 7 \times 10^{9} \times 2 \times 10^{12} \approx 8.4 \times 10^{22}$ FLOPs. Chinchilla-optimal training uses $D \approx 20N$.'
+    cite: 'Kaplan et al., 2020; Hoffmann et al., 2022'
+  - id: n.eq.intensity
+    group: efficiency
+    level: 5
+    name: Arithmetic intensity
+    tex: 'I = \frac{\text{FLOPs}}{\text{bytes moved}}, \qquad I_{\text{matmul}}(n{\times}n{\times}n,\ \text{BF16}) = \frac{2n^{3}}{3 \cdot 2n^{2}} = \frac{n}{3}, \qquad I_{\text{matvec}} \approx 1'
+    read: arithmetic intensity is FLOPs per byte moved
+    meaning: 'How much computing you do for each byte you fetch from memory. Large matrix products reuse each number many times; a matrix–vector product uses each weight once.'
+    terms:
+      - ['2n^{3}', 'FLOPs of an $n \times n$ by $n \times n$ product']
+      - ['3 \cdot 2n^{2}', 'bytes to read A and B and write C in BF16']
+    ai: 'LLM decoding at batch size 1 is matrix–vector work with $I \approx 1$ FLOP/byte, far below the ~300 an H100 needs to be compute-bound. That is why batching many requests speeds up serving.'
+  - id: n.eq.roofline
+    group: efficiency
+    level: 5
+    name: Roofline model
+    tex: 'P = \min\big(\pi,\; \beta \cdot I\big), \qquad I^{*} = \frac{\pi}{\beta}'
+    read: attainable performance equals the minimum of peak compute and bandwidth times intensity
+    meaning: 'Below the ridge point $I^{*}$ a kernel is memory-bound (speed limited by bandwidth); above it, compute-bound (limited by peak FLOP/s).'
+    terms:
+      - ['\pi', 'peak compute, FLOP/s']
+      - ['\beta', 'memory bandwidth, bytes/s']
+      - ['I^{*}', 'ridge point: about $990 \times 10^{12} / 3.35 \times 10^{12} \approx 295$ FLOP/byte on an H100 in BF16']
+    ai: 'Kernel fusion, FlashAttention and quantization all aim to raise $I$ or cut bytes moved.'
+    cite: 'Williams, Waterman & Patterson, 2009'
+  - id: n.eq.decode_bound
+    group: efficiency
+    level: 5
+    name: Memory-bound decoding speed
+    tex: 't_{\text{token}} \ge \frac{\text{bytes of weights} + \text{bytes of KV cache}}{\beta}'
+    read: time per token is at least the bytes that must be read divided by memory bandwidth
+    meaning: 'To generate each token, every weight must be read from memory at least once. At small batch sizes this, not arithmetic, sets the speed limit.'
+    terms:
+      - ['\beta', 'memory bandwidth']
+    ai: 'A 7B model in BF16 (14 GB) at 3.35 TB/s: at least 4.2 ms per token, at most about 240 tokens/s. In INT4 (3.5 GB) the limit is about 4 times higher.'
+  - id: n.eq.kv_cache
+    group: efficiency
+    level: 5
+    name: KV-cache size
+    tex: '\text{KV bytes} = 2 \cdot L \cdot n_{\text{kv}} \cdot d_{\text{head}} \cdot T \cdot B \cdot b_{\text{elem}}'
+    read: KV bytes equals two times layers times KV heads times head size times sequence length times batch times bytes per element
+    meaning: 'During generation each layer stores a key and a value vector (the 2) for every past token, so later tokens do not recompute them. It grows linearly with context length and batch.'
+    terms:
+      - ['L', 'number of layers']
+      - ['n_{\text{kv}}', 'number of key/value heads (fewer than query heads with GQA/MQA)']
+      - ['T, B', 'context length and batch size']
+      - ['b_{\text{elem}}', 'bytes per number: 2 for BF16, 1 for FP8']
+    ai: 'LLaMA-2-7B ($L = 32$, $n_{\text{kv}} = 32$, $d_{\text{head}} = 128$) at 4,096 tokens in BF16: exactly 2 GiB per sequence. GQA with 8 KV heads cuts that by 4.'
+  - id: n.eq.attn_cost
+    group: efficiency
+    level: 5
+    name: Cost of self-attention
+    tex: '\text{FLOPs} \approx 4\,n^{2}\,d \;\text{ per layer}, \qquad \text{naive memory for scores} = \mathcal{O}(h\,n^{2})'
+    read: attention costs about four n squared d FLOPs per layer, and naive memory grows as n squared
+    meaning: 'Computing $\mathbf{Q}\mathbf{K}^{\top}$ and multiplying the weights by $\mathbf{V}$ each cost $2n^{2}d$. Both time and naive memory grow with the square of the sequence length.'
+    terms:
+      - ['n', 'sequence length']
+      - ['d', 'model width ($h \cdot d_k$)']
+      - ['h\,n^{2}', 'one $n \times n$ score matrix per head']
+    ai: 'Doubling the context quadruples attention cost. FlashAttention removes the $n^{2}$ memory, but the $n^{2}$ FLOPs remain.'

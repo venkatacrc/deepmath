@@ -1,0 +1,84 @@
+title: Deep Math
+levels:
+  - {id: 1, label: 'Grade 5–6'}
+  - {id: 2, label: 'Grade 7–8'}
+  - {id: 3, label: 'High school'}
+  - {id: 4, label: 'Undergraduate'}
+  - {id: 5, label: 'Masters'}
+
+# Each branch has its own content file, content/<id>.yaml. Groups are listed in teaching order.
+sources:
+  - id: foundations
+    title: Foundations & Notation
+    ai: The symbols every paper assumes you can read.
+    groups:
+      - {id: numbers, label: Numbers & operations}
+      - {id: algebra, label: Variables & expressions}
+      - {id: functions, label: Functions}
+      - {id: sets, label: Sets & logic}
+      - {id: sums, label: 'Sums, products & indices'}
+      - {id: greek, label: Greek letters}
+      - {id: papers, label: Paper conventions}
+  - id: linalg
+    title: Linear Algebra
+    ai: Embeddings, vector spaces, matrix multiplication in Transformer layers, dimensions.
+    groups:
+      - {id: vectors, label: Vectors}
+      - {id: dot, label: Dot products & norms}
+      - {id: matrices, label: Matrices}
+      - {id: matmul, label: Matrix multiplication}
+      - {id: tensors, label: Tensors & shapes}
+      - {id: decomp, label: Eigenvalues & SVD}
+      - {id: transformers, label: Transformer layers}
+  - id: calculus
+    title: Multivariate Calculus
+    ai: Backpropagation, computing gradients, partial derivatives for weight updates.
+    groups:
+      - {id: slopes, label: Rates & slopes}
+      - {id: derivatives, label: Derivatives}
+      - {id: chain, label: Chain rule}
+      - {id: partials, label: Partial derivatives & gradients}
+      - {id: jacobian, label: Jacobians & Hessians}
+      - {id: backprop, label: Backpropagation}
+  - id: prob
+    title: Probability & Statistics
+    ai: Maximum Likelihood Estimation, Bayesian networks, stochastic sampling, evaluating model metrics.
+    groups:
+      - {id: basics, label: Chance & counting}
+      - {id: rv, label: Random variables & expectation}
+      - {id: dists, label: Distributions}
+      - {id: bayes, label: Conditional probability & Bayes}
+      - {id: mle, label: 'Estimation: MLE & MAP'}
+      - {id: sampling, label: Stochastic sampling}
+      - {id: metrics, label: Evaluation metrics}
+  - id: info
+    title: Information Theory
+    ai: Objective functions (cross-entropy), measuring information gain, model alignment.
+    groups:
+      - {id: entropy, label: Surprise & entropy}
+      - {id: xent, label: Cross-entropy}
+      - {id: kl, label: KL divergence}
+      - {id: mi, label: Mutual information & information gain}
+      - {id: alignment, label: Alignment objectives}
+  - id: optim
+    title: Optimization Theory
+    ai: Convergence rates, optimizer dynamics (Adam/SGD), loss landscape navigation.
+    groups:
+      - {id: minima, label: Minima & objectives}
+      - {id: gd, label: Gradient descent}
+      - {id: sgd, label: SGD & momentum}
+      - {id: adam, label: Adam & AdamW}
+      - {id: schedules, label: Learning-rate schedules}
+      - {id: convergence, label: Convexity & convergence rates}
+      - {id: landscape, label: Loss landscape}
+      - {id: regularization, label: Regularization}
+  - id: numerics
+    title: Numerical Analysis
+    ai: Model quantization, FP8/BF16 training stability, memory-bound computing efficiency.
+    groups:
+      - {id: representation, label: Number representation}
+      - {id: float, label: Floating-point formats}
+      - {id: error, label: Rounding & error}
+      - {id: stability, label: Numerical stability}
+      - {id: quant, label: Quantization}
+      - {id: efficiency, label: Compute & memory efficiency}
