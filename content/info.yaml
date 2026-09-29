@@ -1,0 +1,318 @@
+notation:
+  - id: i.bits
+    group: entropy
+    level: 3
+    name: Bits and nats
+    tex: '\log_{2} \;\Rightarrow\; \text{bits}, \qquad \ln \;\Rightarrow\; \text{nats}, \qquad 1 \text{ nat} = \tfrac{1}{\ln 2} \approx 1.443 \text{ bits}'
+    read: log base 2 gives bits; natural log gives nats
+    meaning: 'Information is measured in bits when the log is base 2 (one fair yes/no question = 1 bit) and in nats when it is the natural log. The choice only changes the unit.'
+    ai: 'PyTorch losses are in nats. Compression results (bits per byte, bits per character) convert to bits by dividing by $\ln 2$.'
+  - id: i.entropy_notation
+    group: entropy
+    level: 4
+    name: Entropy
+    tex: 'H(X), \quad H(p), \quad \mathbb{H}[p]'
+    read: H of X, the entropy of X
+    meaning: 'The average surprise of a random variable: how many bits you need, on average, to describe one outcome. It can be written with the variable or with its distribution.'
+    ai: 'Low entropy means the model is confident; entropy bonuses in RL keep a policy exploring.'
+  - id: i.cross_entropy_notation
+    group: xent
+    level: 4
+    name: Cross-entropy
+    tex: 'H(p, q)'
+    read: the cross-entropy of q relative to p
+    meaning: 'The average surprise when outcomes come from $p$ but you assign them probabilities from $q$. The first argument is the truth, the second the model. It is not symmetric.'
+    ai: 'The default loss for classification and language modeling, with $p$ the data and $q = p_{\boldsymbol{\theta}}$.'
+  - id: i.kl_notation
+    group: kl
+    level: 5
+    name: KL divergence
+    tex: 'D_{\mathrm{KL}}(p \,\|\, q)'
+    read: the KL divergence of p from q, or KL of p parallel q
+    meaning: 'How much worse it is to use $q$ when the truth is $p$, in extra bits or nats. It is 0 only when $p = q$, and $D_{\mathrm{KL}}(p \| q) \ne D_{\mathrm{KL}}(q \| p)$ in general. Also written $\mathrm{KL}(p \| q)$.'
+    ai: 'Keeps a fine-tuned model close to its reference model in RLHF; regularises the latent space in VAEs.'
+  - id: i.kl_direction
+    group: kl
+    level: 5
+    name: Forward and reverse KL
+    tex: 'D_{\mathrm{KL}}(p \,\|\, q_{\theta}) \;\;\text{vs.}\;\; D_{\mathrm{KL}}(q_{\theta} \,\|\, p)'
+    read: forward KL versus reverse KL
+    meaning: 'Forward KL (data first) punishes $q_{\theta}$ for missing any region where $p$ has mass, so it spreads out to cover everything (“mass-covering”). Reverse KL punishes $q_{\theta}$ for putting mass where $p$ has none, so it locks onto one mode (“mode-seeking”).'
+    ai: 'MLE minimises forward KL; the KL penalty in RLHF and variational inference use reverse KL.'
+  - id: i.cond_entropy_notation
+    group: mi
+    level: 5
+    name: Conditional entropy
+    tex: 'H(Y \mid X)'
+    read: the entropy of Y given X
+    meaning: 'The uncertainty left in $Y$ after you learn $X$, averaged over the values of $X$.'
+    ai: 'A perfect classifier has $H(Y \mid X) = 0$: once you see the input, the label is certain.'
+  - id: i.mi_notation
+    group: mi
+    level: 5
+    name: Mutual information
+    tex: 'I(X; Y)'
+    read: the mutual information between X and Y
+    meaning: 'How much knowing one variable reduces uncertainty about the other. Note the semicolon; it is symmetric: $I(X; Y) = I(Y; X)$.'
+    ai: 'Contrastive learning (InfoNCE) maximises a lower bound on the mutual information between two views of the same data.'
+
+equations:
+  - id: i.eq.surprise
+    group: entropy
+    level: 3
+    name: Surprise (information content)
+    tex: 'I(x) = -\log_{2} p(x) = \log_{2}\frac{1}{p(x)}'
+    read: the information of x equals minus log base 2 of p of x
+    meaning: 'Rare events carry more information. A fair coin flip is 1 bit; an event with probability $\frac{1}{8}$ is 3 bits; a certain event is 0 bits.'
+    terms:
+      - ['p(x)', 'probability of the outcome']
+      - ['-\log', 'large when $p$ is small, zero when $p = 1$']
+    ai: 'The per-token loss of a language model is exactly the surprise of the true next token under the model.'
+  - id: i.eq.entropy
+    group: entropy
+    level: 4
+    name: Shannon entropy
+    tex: 'H(X) = -\sum_{x} p(x)\,\log p(x) = \mathbb{E}_{x \sim p}\big[-\log p(x)\big]'
+    read: H of X equals minus the sum over x of p of x log p of x
+    meaning: 'The expected surprise. It is largest when all outcomes are equally likely ($\log K$ for $K$ outcomes) and 0 when one outcome is certain.'
+    terms:
+      - ['-\log p(x)', 'surprise of outcome $x$']
+      - ['p(x)\,\cdot', 'weighted by how often it happens']
+      - ['0 \log 0 := 0', 'convention for impossible outcomes']
+    ai: 'The entropy of the next-token distribution measures model uncertainty; some decoding and early-exit methods threshold on it.'
+    cite: 'Shannon, “A Mathematical Theory of Communication”, 1948'
+  - id: i.eq.xent
+    group: xent
+    level: 4
+    name: Cross-entropy
+    tex: 'H(p, q) = -\sum_{x} p(x)\,\log q(x) = \mathbb{E}_{x \sim p}\big[-\log q(x)\big]'
+    read: H of p and q equals minus the sum over x of p of x log q of x
+    meaning: 'The expected surprise under the model $q$ when data really comes from $p$. It is always at least $H(p)$, with equality only when $q = p$.'
+    terms:
+      - ['p(x)', 'true distribution (the data)']
+      - ['\log q(x)', 'model’s log-probability']
+    ai: 'Minimising cross-entropy to the data distribution is the same as maximum likelihood.'
+  - id: i.eq.ce_onehot
+    group: xent
+    level: 4
+    name: Classification loss with a one-hot label
+    tex: '\mathcal{L}_{\text{CE}}(\mathbf{z}, y) = -\sum_{k=1}^{K} [\mathbf{e}_{y}]_{k}\,\log \operatorname{softmax}(\mathbf{z})_{k} = -\log \frac{e^{z_{y}}}{\sum_{j} e^{z_{j}}}'
+    read: the cross-entropy loss equals minus log of the softmax probability of the correct class y
+    meaning: 'With a one-hot target every term but one is zero, so the loss is just minus the log-probability of the correct class.'
+    terms:
+      - ['\mathbf{e}_{y}', 'one-hot target for class $y$']
+      - ['z_y', 'logit of the correct class']
+      - ['\log \sum_{j} e^{z_j}', 'log-sum-exp, computed stably in practice']
+    ai: '`F.cross_entropy(logits, y)` in PyTorch computes this directly from logits.'
+  - id: i.eq.bce
+    group: xent
+    level: 4
+    name: Binary cross-entropy
+    tex: '\mathcal{L}_{\text{BCE}}(y, \hat{y}) = -\big[\, y \log \hat{y} + (1 - y)\log(1 - \hat{y}) \,\big], \qquad \hat{y} = \sigma(z)'
+    read: B C E equals minus the quantity y log y hat plus one minus y times log of one minus y hat
+    meaning: 'Cross-entropy for a yes/no label. Only one term is active: $-\log \hat{y}$ if the answer is yes, $-\log(1 - \hat{y})$ if no.'
+    terms:
+      - ['y \in \{0, 1\}', 'true label']
+      - ['\hat{y} \in (0, 1)', 'predicted probability of 1']
+    ai: 'Used for multi-label classification, reward models and discriminators.'
+  - id: i.eq.lm_loss
+    group: xent
+    level: 5
+    name: Language-modeling loss
+    tex: '\mathcal{L}(\boldsymbol{\theta}) = -\frac{1}{T}\sum_{t=1}^{T} \log p_{\boldsymbol{\theta}}(x_{t} \mid x_{<t})'
+    read: L of theta equals minus one over T times the sum over t of log p theta of x t given x before t
+    meaning: 'Average, over every position, the surprise of the actual next token. It is cross-entropy between the text and the model, and its exponential is perplexity.'
+    terms:
+      - ['x_t', 'the true next token']
+      - ['x_{<t}', 'the context the model sees']
+      - ['\frac{1}{T}', 'average per token']
+    ai: 'The pretraining objective of every GPT-style model.'
+  - id: i.eq.softmax_grad
+    group: xent
+    level: 5
+    name: Gradient of softmax cross-entropy
+    tex: '\frac{\partial \mathcal{L}_{\text{CE}}}{\partial \mathbf{z}} = \operatorname{softmax}(\mathbf{z}) - \mathbf{e}_{y} = \mathbf{p} - \mathbf{y}'
+    read: the gradient of the cross-entropy loss with respect to the logits equals the predicted probabilities minus the one-hot target
+    meaning: 'The gradient is simply “prediction minus truth”: push down every wrong class by its probability and push up the correct class by $1 - p_y$.'
+    terms:
+      - ['\mathbf{p}', 'predicted probabilities']
+      - ['\mathbf{y} = \mathbf{e}_y', 'one-hot target']
+    ai: 'This clean form is why softmax and cross-entropy are always fused in code: faster and numerically stable.'
+  - id: i.eq.label_smoothing
+    group: xent
+    level: 5
+    name: Label smoothing
+    tex: '\mathbf{y}^{\text{LS}} = (1 - \varepsilon)\,\mathbf{e}_{y} + \frac{\varepsilon}{K}\,\mathbf{1}'
+    read: y L S equals one minus epsilon times the one-hot target, plus epsilon over K on every class
+    meaning: 'Replace the hard one-hot target with a slightly softened one, so the model is never pushed toward probability exactly 1.'
+    terms:
+      - ['\varepsilon', 'smoothing amount, e.g. 0.1']
+      - ['\frac{\varepsilon}{K}\mathbf{1}', 'a little probability spread over all $K$ classes']
+    ai: 'Improves calibration; used in the original Transformer and in Inception.'
+    cite: 'Szegedy et al., 2016'
+  - id: i.eq.kl
+    group: kl
+    level: 5
+    name: KL divergence formula
+    tex: 'D_{\mathrm{KL}}(p \,\|\, q) = \sum_{x} p(x)\,\log\frac{p(x)}{q(x)} = \mathbb{E}_{x \sim p}\big[\log p(x) - \log q(x)\big] \ge 0'
+    read: the KL divergence of p from q equals the sum over x of p of x times log of p of x over q of x
+    meaning: 'The expected log-ratio between the two distributions, weighted by $p$. It is never negative (Gibbs’ inequality).'
+    terms:
+      - ['\log\frac{p(x)}{q(x)}', 'how much more likely $x$ is under $p$ than under $q$']
+      - ['\mathbb{E}_{x \sim p}', 'averaged over samples from $p$']
+    ai: 'In RLHF it is estimated per token from samples: $\log \pi_\theta(y_t \mid \cdot) - \log \pi_{\text{ref}}(y_t \mid \cdot)$.'
+  - id: i.eq.xent_decomp
+    group: kl
+    level: 5
+    name: Cross-entropy = entropy + KL
+    tex: 'H(p, q) = H(p) + D_{\mathrm{KL}}(p \,\|\, q)'
+    read: the cross-entropy of p and q equals the entropy of p plus the KL divergence of p from q
+    meaning: 'Cross-entropy splits into the unavoidable uncertainty in the data, $H(p)$, plus the extra cost of the model being wrong, the KL.'
+    terms:
+      - ['H(p)', 'irreducible: fixed by the data']
+      - ['D_{\mathrm{KL}}(p \| q)', 'reducible: what training shrinks']
+    ai: 'Explains why LM loss never reaches zero, and the constant $E$ (irreducible loss) in scaling laws.'
+  - id: i.eq.info_gain
+    group: mi
+    level: 4
+    name: Information gain
+    tex: '\operatorname{IG}(Y, A) = H(Y) - \sum_{a} \frac{|S_{a}|}{|S|}\,H(Y \mid A = a)'
+    read: the information gain of splitting on A equals the entropy of Y minus the weighted average entropy of Y in each branch
+    meaning: 'How much a question (the feature $A$) reduces uncertainty about the label $Y$. Decision trees split on the feature with the highest gain.'
+    terms:
+      - ['H(Y)', 'uncertainty before the split']
+      - ['S_a', 'examples where $A = a$']
+      - ['H(Y \mid A = a)', 'uncertainty left in that branch']
+    ai: 'The second term is $H(Y \mid A)$, so information gain is the mutual information $I(Y; A)$. Active learning picks the data whose label would give the most information gain.'
+    cite: 'Quinlan, ID3, 1986'
+  - id: i.eq.mi
+    group: mi
+    level: 5
+    name: Mutual information
+    tex: 'I(X; Y) = H(X) - H(X \mid Y) = D_{\mathrm{KL}}\big(p(x, y) \,\|\, p(x)\,p(y)\big)'
+    read: I of X and Y equals H of X minus H of X given Y, which is the KL divergence of the joint from the product of the marginals
+    meaning: 'The reduction in uncertainty about $X$ from knowing $Y$. Equivalently, how far the joint distribution is from what it would be if they were independent.'
+    terms:
+      - ['H(X \mid Y)', 'uncertainty in $X$ that remains after seeing $Y$']
+      - ['p(x)\,p(y)', 'the joint if $X$ and $Y$ were independent']
+    ai: 'Zero if and only if $X$ and $Y$ are independent. Used in feature selection, the information bottleneck, and interpretability probes.'
+  - id: i.eq.infonce
+    group: mi
+    level: 5
+    name: InfoNCE (contrastive) loss
+    tex: '\mathcal{L}_{\text{InfoNCE}} = -\log \frac{\exp\!\big(\operatorname{sim}(\mathbf{q}, \mathbf{k}^{+}) / \tau\big)}{\sum_{i=0}^{K} \exp\!\big(\operatorname{sim}(\mathbf{q}, \mathbf{k}_{i}) / \tau\big)}'
+    read: InfoNCE equals minus log of e to the similarity of the query and its positive key over tau, over the sum across all keys
+    meaning: 'A softmax classification problem: pick out the one matching item $\mathbf{k}^{+}$ from $K$ distractors. Minimising it maximises a lower bound on mutual information.'
+    terms:
+      - ['\mathbf{k}^{+}', 'positive: another view of the same example']
+      - ['\mathbf{k}_{i}', 'all candidates, including the positive']
+      - ['\operatorname{sim}', 'usually cosine similarity']
+      - ['\tau', 'temperature, e.g. 0.07']
+    ai: 'CLIP trains image and text encoders with this loss; so do SimCLR and dense retrievers.'
+    cite: 'van den Oord et al., “Representation Learning with Contrastive Predictive Coding”, 2018'
+  - id: i.eq.elbo
+    group: kl
+    level: 5
+    name: Evidence lower bound (ELBO)
+    tex: '\log p_{\theta}(\mathbf{x}) \;\ge\; \mathbb{E}_{q_{\phi}(\mathbf{z} \mid \mathbf{x})}\big[\log p_{\theta}(\mathbf{x} \mid \mathbf{z})\big] - D_{\mathrm{KL}}\big(q_{\phi}(\mathbf{z} \mid \mathbf{x}) \,\|\, p(\mathbf{z})\big)'
+    read: log p theta of x is at least the expected reconstruction log-likelihood minus the KL divergence of the encoder from the prior
+    meaning: 'The true log-likelihood is intractable, but this lower bound is not. Its first term rewards good reconstructions; the KL keeps the codes close to the prior.'
+    terms:
+      - ['q_{\phi}(\mathbf{z} \mid \mathbf{x})', 'encoder: approximate posterior']
+      - ['p_{\theta}(\mathbf{x} \mid \mathbf{z})', 'decoder']
+      - ['p(\mathbf{z}) = \mathcal{N}(\mathbf{0}, \mathbf{I})', 'prior over latent codes']
+    ai: 'The VAE objective; the diffusion training loss is also derived from an ELBO.'
+    cite: 'Kingma & Welling, 2014'
+  - id: i.eq.distill
+    group: kl
+    level: 5
+    name: Knowledge distillation
+    tex: '\mathcal{L}_{\text{KD}} = \tau^{2}\,D_{\mathrm{KL}}\big(\operatorname{softmax}(\mathbf{z}_{T} / \tau) \,\|\, \operatorname{softmax}(\mathbf{z}_{S} / \tau)\big)'
+    read: the distillation loss equals tau squared times the KL divergence between the teacher’s and the student’s softened distributions
+    meaning: 'Train a small student to match the full output distribution of a large teacher, not just the top answer. A temperature $\tau > 1$ exposes how the teacher ranks the wrong answers.'
+    terms:
+      - ['\mathbf{z}_T, \mathbf{z}_S', 'teacher and student logits']
+      - ['\tau', 'distillation temperature']
+      - ['\tau^{2}', 'keeps gradient size comparable as $\tau$ changes']
+    ai: 'How many small open models are trained from larger ones.'
+    cite: 'Hinton, Vinyals & Dean, “Distilling the Knowledge in a Neural Network”, 2015'
+
+  # ---- Alignment objectives ----
+  - id: i.eq.bradley_terry
+    group: alignment
+    level: 5
+    name: Reward-model loss (Bradley–Terry)
+    tex: '\mathcal{L}_{R}(\phi) = -\,\mathbb{E}_{(x, y_{w}, y_{l}) \sim \mathcal{D}}\Big[ \log \sigma\big( r_{\phi}(x, y_{w}) - r_{\phi}(x, y_{l}) \big) \Big]'
+    read: L R equals minus the expectation over preference pairs of log sigma of the reward of the winner minus the reward of the loser
+    meaning: 'Humans compared two answers. Train a reward model so that the probability “winner beats loser”, $\sigma(\Delta r)$, is high: binary cross-entropy on the reward difference.'
+    terms:
+      - ['y_w, y_l', 'preferred (winning) and rejected (losing) responses']
+      - ['r_{\phi}(x, y)', 'scalar reward for response $y$ to prompt $x$']
+      - ['\sigma(r_w - r_l)', 'Bradley–Terry probability that $y_w$ is preferred']
+    ai: 'Stage 2 of classic RLHF (InstructGPT).'
+    cite: 'Ouyang et al., “Training language models to follow instructions with human feedback”, 2022'
+  - id: i.eq.rlhf
+    group: alignment
+    level: 5
+    name: KL-regularised RLHF objective
+    tex: '\max_{\pi_{\theta}} \; \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_{\theta}(\cdot \mid x)}\big[ r_{\phi}(x, y) \big] \;-\; \beta\, D_{\mathrm{KL}}\big( \pi_{\theta}(\cdot \mid x) \,\|\, \pi_{\text{ref}}(\cdot \mid x) \big)'
+    read: maximise over the policy pi theta the expected reward of its answers, minus beta times the KL divergence of the policy from the reference model
+    meaning: 'Make the model produce answers the reward model likes, but pay a penalty for drifting far from the original model. That prevents “reward hacking” and keeps the language fluent.'
+    terms:
+      - ['\pi_{\theta}', 'the policy: the LLM being tuned']
+      - ['\pi_{\text{ref}}', 'frozen reference (the SFT model)']
+      - ['r_{\phi}', 'learned reward model']
+      - ['\beta', 'strength of the KL leash']
+    ai: 'Optimised with PPO in InstructGPT; GRPO and DPO start from the same objective.'
+    cite: 'Ouyang et al., 2022; Ziegler et al., 2019'
+  - id: i.eq.optimal_policy
+    group: alignment
+    level: 5
+    name: Optimal KL-regularised policy
+    tex: '\pi^{*}(y \mid x) = \frac{1}{Z(x)}\,\pi_{\text{ref}}(y \mid x)\,\exp\!\Big(\frac{1}{\beta}\,r(x, y)\Big)'
+    read: pi star of y given x equals one over Z of x times pi ref of y given x times e to the reward over beta
+    meaning: 'The exact solution of the RLHF objective: reweight the reference model’s answers by the exponential of their reward. $Z(x)$ normalises, and cannot be computed directly.'
+    terms:
+      - ['Z(x) = \sum_{y} \pi_{\text{ref}}(y \mid x)\,e^{r(x, y)/\beta}', 'partition function']
+      - ['\beta \to 0', 'pure reward maximisation']
+      - ['\beta \to \infty', 'stay exactly at $\pi_{\text{ref}}$']
+    ai: 'Solving for $r$ gives $r = \beta \log\frac{\pi^{*}}{\pi_{\text{ref}}} + \beta\log Z$, the key step in deriving DPO.'
+    cite: 'Rafailov et al., 2023'
+  - id: i.eq.dpo
+    group: alignment
+    level: 5
+    name: Direct Preference Optimization (DPO)
+    tex: '\mathcal{L}_{\text{DPO}}(\theta) = -\,\mathbb{E}_{(x, y_{w}, y_{l})}\left[ \log \sigma\!\left( \beta \log\frac{\pi_{\theta}(y_{w} \mid x)}{\pi_{\text{ref}}(y_{w} \mid x)} - \beta \log\frac{\pi_{\theta}(y_{l} \mid x)}{\pi_{\text{ref}}(y_{l} \mid x)} \right) \right]'
+    read: L DPO equals minus the expectation of log sigma of beta times the log-ratio for the winner minus beta times the log-ratio for the loser
+    meaning: 'Skip the reward model and RL. The policy’s own log-ratio against the reference acts as an implicit reward, and the Bradley–Terry loss is applied to it directly.'
+    terms:
+      - ['\beta \log \frac{\pi_{\theta}(y \mid x)}{\pi_{\text{ref}}(y \mid x)}', 'implicit reward of response $y$']
+      - ['y_w, y_l', 'preferred and rejected responses']
+      - ['\log\sigma(\cdot)', 'Bradley–Terry log-likelihood (the $\log Z$ terms cancel)']
+    ai: 'A widely used preference-tuning method for open models, because it is just supervised training on pairs.'
+    cite: 'Rafailov et al., “Direct Preference Optimization”, 2023'
+  - id: i.eq.ppo_clip
+    group: alignment
+    level: 5
+    name: PPO clipped objective
+    tex: '\mathcal{L}^{\text{CLIP}}(\theta) = \mathbb{E}_{t}\Big[ \min\big( \rho_{t}(\theta)\,\hat{A}_{t},\; \operatorname{clip}(\rho_{t}(\theta), 1 - \epsilon, 1 + \epsilon)\,\hat{A}_{t} \big) \Big], \qquad \rho_{t}(\theta) = \frac{\pi_{\theta}(a_{t} \mid s_{t})}{\pi_{\theta_{\text{old}}}(a_{t} \mid s_{t})}'
+    read: L clip equals the expectation over steps of the minimum of rho t times A hat t and the clipped rho t times A hat t
+    meaning: 'Raise the probability of actions that did better than expected (positive advantage) and lower the others, but clip the probability ratio so that no update moves the policy too far.'
+    terms:
+      - ['\rho_t', 'probability ratio of new to old policy']
+      - ['\hat{A}_t', 'advantage: how much better than average the action was']
+      - ['\epsilon', 'clip range, e.g. 0.2']
+    ai: 'The RL algorithm in InstructGPT-style RLHF. For LLMs an “action” is a token and the “state” is the prompt plus the tokens so far.'
+    cite: 'Schulman et al., “Proximal Policy Optimization Algorithms”, 2017'
+  - id: i.eq.grpo_adv
+    group: alignment
+    level: 5
+    name: Group-relative advantage (GRPO)
+    tex: '\hat{A}_{i} = \frac{r_{i} - \operatorname{mean}(r_{1}, \ldots, r_{G})}{\operatorname{std}(r_{1}, \ldots, r_{G})}'
+    read: A hat i equals r i minus the mean of the group’s rewards, over their standard deviation
+    meaning: 'Sample $G$ answers to the same prompt and score each against its siblings, instead of training a separate value network to estimate the baseline.'
+    terms:
+      - ['G', 'group size: answers sampled per prompt']
+      - ['r_i', 'reward of answer $i$ (e.g. 1 if a maths answer is correct)']
+    ai: 'Used to train reasoning models (DeepSeekMath, DeepSeek-R1) with verifiable rewards.'
+    cite: 'Shao et al., “DeepSeekMath”, 2024'

@@ -1,0 +1,402 @@
+notation:
+  # ---- Rates & slopes ----
+  - id: c.delta
+    group: slopes
+    level: 2
+    name: Change in (Delta)
+    tex: '\Delta x = x_{\text{new}} - x_{\text{old}}'
+    read: delta x
+    meaning: 'Capital delta in front of a variable means “the change in” it: new value minus old value. It is one symbol, not $\Delta$ times $x$.'
+    example: 'x: 3 \to 7 \quad\Rightarrow\quad \Delta x = 4'
+    ai: '$\Delta\boldsymbol{\theta}$ is how much the weights move in one training step.'
+  - id: c.limit
+    group: slopes
+    level: 3
+    name: Limit
+    tex: '\lim_{x \to a} f(x) = L'
+    read: the limit of f of x as x approaches a is L
+    meaning: 'The value $f(x)$ gets as close to as you like when $x$ gets close to $a$, even if $f(a)$ itself is undefined.'
+    example: '\lim_{x \to 0} \frac{\sin x}{x} = 1'
+    ai: 'Derivatives are limits; convergence results are limits as the number of steps $T \to \infty$.'
+  - id: c.infinity
+    group: slopes
+    level: 3
+    name: Infinity and tends to
+    tex: 'x \to \infty, \qquad f(x) \to 0'
+    read: x goes to infinity; f of x tends to zero
+    meaning: '$\infty$ is not a number but a direction: “grows without bound”. $\to$ in a limit is read “approaches” or “tends to”.'
+    example: '\frac{1}{x} \to 0 \text{ as } x \to \infty'
+    ai: 'The attention mask uses $-\infty$ because $e^{-\infty} = 0$: masked tokens get zero weight.'
+
+  # ---- Derivatives ----
+  - id: c.leibniz
+    group: derivatives
+    level: 3
+    name: Derivative (Leibniz notation)
+    tex: '\frac{dy}{dx}, \qquad \frac{d}{dx} f(x)'
+    read: d y d x; d by d x of f of x
+    meaning: 'The instantaneous rate of change of $y$ as $x$ changes: the slope of the curve at a point. It is not a fraction of two numbers, but it often behaves like one.'
+    example: '\frac{d}{dx} x^{2} = 2x'
+    ai: 'Leibniz notation makes the chain rule look like cancelling fractions, which is why backprop derivations use it.'
+  - id: c.prime
+    group: derivatives
+    level: 3
+    name: Derivative (prime and dot notation)
+    tex: "f'(x), \\quad f''(x), \\quad \\dot{x}"
+    read: f prime of x; f double prime of x; x dot
+    meaning: "A prime is the derivative of a one-variable function; two primes, the second derivative. A dot over a variable is a derivative with respect to time (Newton's notation)."
+    example: "f(x) = x^{3}: \\quad f'(x) = 3x^{2}, \\quad f''(x) = 6x"
+    ai: "Activation derivatives such as $\\sigma'(z)$ appear in every backprop formula; $\\dot{\\boldsymbol{\\theta}} = -\\nabla\\mathcal{L}$ is gradient flow."
+  - id: c.second
+    group: derivatives
+    level: 3
+    name: Second derivative
+    tex: '\frac{d^{2}y}{dx^{2}}'
+    read: d squared y d x squared
+    meaning: 'The derivative of the derivative: how fast the slope itself is changing. Positive means the curve bends upward (convex, like a bowl).'
+    example: '\frac{d^{2}}{dx^{2}} x^{2} = 2 > 0'
+    ai: 'Curvature of the loss. In many dimensions it becomes the Hessian matrix.'
+  - id: c.evaluated
+    group: derivatives
+    level: 4
+    name: Evaluated at
+    tex: '\left.\frac{df}{dx}\right|_{x = a}'
+    read: d f d x evaluated at x equals a
+    meaning: 'Take the derivative first, then plug in $x = a$. The vertical bar means “at”.'
+    example: '\left.\frac{d}{dx} x^{2}\right|_{x=3} = 2 \cdot 3 = 6'
+    ai: 'Gradients are always evaluated at the current weights: $\nabla\mathcal{L}(\boldsymbol{\theta})\big|_{\boldsymbol{\theta} = \boldsymbol{\theta}_t}$.'
+  - id: c.integral
+    group: derivatives
+    level: 3
+    name: Definite integral
+    tex: '\int_{a}^{b} f(x)\,dx'
+    read: the integral from a to b of f of x d x
+    meaning: 'The (signed) area under the curve between $a$ and $b$: the continuous version of a sum. The $dx$ says which variable is being integrated.'
+    example: '\int_{0}^{1} 2x\,dx = 1'
+    ai: 'Expectations over continuous variables are integrals: $\mathbb{E}[f(x)] = \int f(x)\,p(x)\,dx$.'
+
+  # ---- Partial derivatives & gradients ----
+  - id: c.partial
+    group: partials
+    level: 4
+    name: Partial derivative
+    tex: '\frac{\partial f}{\partial x}'
+    read: partial f partial x, or the partial derivative of f with respect to x
+    meaning: 'For a function of several variables, the rate of change when only $x$ moves and every other variable is held fixed. The curly $\partial$ signals “partial”.'
+    example: 'f(x, y) = x^{2}y: \quad \frac{\partial f}{\partial x} = 2xy, \quad \frac{\partial f}{\partial y} = x^{2}'
+    ai: 'One number per weight: $\frac{\partial \mathcal{L}}{\partial w_{ij}}$ says how the loss changes if that single weight is nudged.'
+  - id: c.partial_short
+    group: partials
+    level: 4
+    name: Short partial notation
+    tex: '\partial_{x} f, \quad f_{x}, \quad \partial_{i} f'
+    read: partial x of f; f sub x; partial i of f
+    meaning: 'Compact ways of writing $\frac{\partial f}{\partial x}$ (or with respect to the $i$-th input). Be careful: $f_x$ can also be just a name.'
+    ai: 'Common in theory papers where full fractions would clutter the page.'
+  - id: c.gradient
+    group: partials
+    level: 4
+    name: Gradient (nabla)
+    tex: '\nabla f(\mathbf{x})'
+    read: the gradient of f at x, or del f of x
+    meaning: 'The vector of all partial derivatives. It points in the direction of steepest increase, and its length is how steep that is.'
+    example: 'f(x, y) = x^{2} + 3y: \quad \nabla f = \begin{bmatrix} 2x \\ 3 \end{bmatrix}'
+    ai: 'Training walks against the gradient: $-\nabla\mathcal{L}$ is the direction of steepest decrease of the loss.'
+  - id: c.grad_wrt
+    group: partials
+    level: 4
+    name: Gradient with respect to a subset
+    tex: '\nabla_{\boldsymbol{\theta}}\,\mathcal{L}(\boldsymbol{\theta}; \mathbf{x}, y)'
+    read: the gradient with respect to theta of L of theta given x and y
+    meaning: 'The subscript says which variables to differentiate by; everything else (the data $\mathbf{x}, y$) is treated as a constant.'
+    ai: 'Adversarial examples use the other gradient, $\nabla_{\mathbf{x}}\mathcal{L}$: how the loss changes with the input pixels.'
+  - id: c.matrix_grad
+    group: partials
+    level: 5
+    name: Gradient with respect to a matrix
+    tex: '\frac{\partial \mathcal{L}}{\partial \mathbf{W}} \in \mathbb{R}^{m \times n}, \qquad \Big[\frac{\partial \mathcal{L}}{\partial \mathbf{W}}\Big]_{ij} = \frac{\partial \mathcal{L}}{\partial W_{ij}}'
+    read: partial L partial W, a matrix whose i j entry is partial L partial W i j
+    meaning: 'For a scalar loss, the gradient with respect to a matrix has the same shape as the matrix, one partial per entry. (This is the “denominator layout” used in ML.)'
+    ai: 'That is why `W.grad` in PyTorch always has the same shape as `W`.'
+
+  # ---- Jacobians & Hessians ----
+  - id: c.jacobian
+    group: jacobian
+    level: 4
+    name: Jacobian matrix
+    tex: '\mathbf{J} = \frac{\partial \mathbf{f}}{\partial \mathbf{x}} \in \mathbb{R}^{m \times n}, \qquad J_{ij} = \frac{\partial f_{i}}{\partial x_{j}}'
+    read: J, the Jacobian of f with respect to x
+    meaning: 'For a vector-valued function $\mathbf{f} : \mathbb{R}^{n} \to \mathbb{R}^{m}$, the matrix of every output’s partial derivative with respect to every input. Row $i$ is the gradient of output $i$.'
+    example: '\mathbf{f}(\mathbf{x}) = \mathbf{W}\mathbf{x} \;\Rightarrow\; \mathbf{J} = \mathbf{W}'
+    ai: 'Every layer has a Jacobian; backprop multiplies by their transposes without ever building them.'
+  - id: c.hessian
+    group: jacobian
+    level: 5
+    name: Hessian matrix
+    tex: '\mathbf{H} = \nabla^{2} f(\mathbf{x}), \qquad H_{ij} = \frac{\partial^{2} f}{\partial x_{i}\,\partial x_{j}}'
+    read: H, the Hessian of f, nabla squared f
+    meaning: 'The matrix of all second partial derivatives: the curvature of $f$ in every pair of directions. It is symmetric for smooth $f$.'
+    example: 'f(x, y) = x^{2} + 3xy: \quad \mathbf{H} = \begin{bmatrix} 2 & 3 \\ 3 & 0 \end{bmatrix}'
+    ai: 'For a model with $10^{9}$ parameters the Hessian has $10^{18}$ entries, so it is only ever used through products $\mathbf{H}\mathbf{v}$ or approximations.'
+  - id: c.mixed
+    group: jacobian
+    level: 5
+    name: Mixed partial derivative
+    tex: '\frac{\partial^{2} f}{\partial x\,\partial y} = \frac{\partial}{\partial x}\Big(\frac{\partial f}{\partial y}\Big)'
+    read: partial squared f partial x partial y
+    meaning: 'Differentiate by $y$, then by $x$. For smooth functions the order does not matter (Schwarz’s theorem).'
+    example: 'f = x^{2}y: \quad \frac{\partial^{2} f}{\partial x\,\partial y} = 2x'
+    ai: 'Off-diagonal Hessian entries measure how two weights interact.'
+
+  # ---- Backpropagation ----
+  - id: c.delta_err
+    group: backprop
+    level: 5
+    name: Error signal at a layer
+    tex: '\boldsymbol{\delta}^{(l)} := \frac{\partial \mathcal{L}}{\partial \mathbf{z}^{(l)}}'
+    read: delta l, defined as partial L partial z l
+    meaning: 'How much the loss changes with each pre-activation of layer $l$. Backprop computes these from the last layer back to the first.'
+    ai: 'Notation from the classic presentations of backprop (Rumelhart, Hinton & Williams, 1986; Nielsen’s book).'
+  - id: c.adjoint
+    group: backprop
+    level: 5
+    name: Adjoint (bar) notation
+    tex: '\bar{v} := \frac{\partial \mathcal{L}}{\partial v}'
+    read: v bar, the adjoint of v
+    meaning: 'In automatic-differentiation papers a bar over any intermediate value means “the derivative of the final output with respect to it”. Not to be confused with a mean.'
+    example: 'c = a\,b \;\Rightarrow\; \bar{a} \mathrel{+}= \bar{c}\,b, \;\; \bar{b} \mathrel{+}= \bar{c}\,a'
+    ai: 'This is exactly what `.grad` stores for each tensor after `loss.backward()`.'
+  - id: c.stopgrad
+    group: backprop
+    level: 5
+    name: Stop-gradient
+    tex: '\operatorname{sg}[\mathbf{x}]'
+    read: stop gradient of x
+    meaning: 'Equals $\mathbf{x}$ in the forward pass but is treated as a constant in the backward pass: gradient zero.'
+    ai: 'Used in VQ-VAE, BYOL/SimSiam and target networks; in code it is `x.detach()`.'
+
+equations:
+  - id: c.eq.speed
+    group: slopes
+    level: 1
+    name: Speed as a rate
+    tex: '\text{speed} = \frac{\text{distance}}{\text{time}}'
+    read: speed equals distance over time
+    meaning: 'A rate says how much one quantity changes for each unit of another. 120 km in 2 hours is $\frac{120}{2} = 60$ km per hour.'
+    terms:
+      - ['\text{distance}', 'how far (the change)']
+      - ['\text{time}', 'how long it took']
+    ai: 'Rates are everywhere in AI: tokens per second, loss drop per step. A derivative is a rate measured at a single instant.'
+  - id: c.eq.slope
+    group: slopes
+    level: 2
+    name: Slope of a line (rise over run)
+    tex: 'm = \frac{\Delta y}{\Delta x} = \frac{y_{2} - y_{1}}{x_{2} - x_{1}}'
+    read: m equals delta y over delta x, y 2 minus y 1 over x 2 minus x 1
+    meaning: 'How much $y$ goes up for each step of 1 in $x$. Pick two points on the line and divide the rise by the run.'
+    terms:
+      - ['(x_1, y_1), (x_2, y_2)', 'two points on the line']
+      - ['\Delta y', 'rise']
+      - ['\Delta x', 'run']
+    ai: 'A derivative is this slope, taken between two points that are infinitely close.'
+  - id: c.eq.derivative_def
+    group: derivatives
+    level: 3
+    name: Definition of the derivative
+    tex: "f'(x) = \\lim_{h \\to 0} \\frac{f(x + h) - f(x)}{h}"
+    read: f prime of x equals the limit as h goes to zero of f of x plus h minus f of x, over h
+    meaning: 'The slope between $x$ and a point a tiny distance $h$ away, as that distance shrinks to zero.'
+    terms:
+      - ['h', 'a small step']
+      - ['f(x+h) - f(x)', 'rise over that step']
+      - ['\lim_{h \to 0}', 'let the step shrink to nothing']
+    ai: 'Gradient checking tests backprop by computing this fraction with a small real $h$ such as $10^{-5}$ (the finite-difference method).'
+  - id: c.eq.power_rule
+    group: derivatives
+    level: 3
+    name: Power rule
+    tex: '\frac{d}{dx} x^{n} = n\,x^{n-1}'
+    read: d by d x of x to the n equals n x to the n minus 1
+    meaning: 'Bring the exponent down in front and reduce it by one.'
+    terms:
+      - ['n', 'any real exponent']
+    ai: 'Gives the gradient of squared error: $\frac{d}{d\hat{y}} (\hat{y} - y)^{2} = 2(\hat{y} - y)$.'
+  - id: c.eq.exp_log
+    group: derivatives
+    level: 3
+    name: Derivatives of exp and log
+    tex: '\frac{d}{dx} e^{x} = e^{x}, \qquad \frac{d}{dx} \ln x = \frac{1}{x}'
+    read: d by d x of e to the x is e to the x; d by d x of the natural log of x is one over x
+    meaning: '$e^{x}$ is its own derivative, which is what makes $e$ special. The log’s slope gets smaller as $x$ grows.'
+    terms:
+      - ['e^{x}', 'grows at a rate equal to its own value']
+      - ['1/x', 'why $-\log p$ has a large gradient when $p$ is small']
+    ai: 'These two rules produce the famous clean gradient of softmax plus cross-entropy.'
+  - id: c.eq.product_rule
+    group: derivatives
+    level: 3
+    name: Product rule
+    tex: "\\frac{d}{dx}\\big[u(x)\\,v(x)\\big] = u'(x)\\,v(x) + u(x)\\,v'(x)"
+    read: the derivative of u times v equals u prime v plus u v prime
+    meaning: 'Differentiate one factor at a time, keep the other fixed, and add the two results.'
+    terms:
+      - ["u'v", 'change coming from $u$']
+      - ["uv'", 'change coming from $v$']
+    ai: 'Needed for gated activations such as SiLU, $x\,\sigma(x)$, whose derivative is $\sigma(x) + x\,\sigma(x)(1 - \sigma(x))$.'
+  - id: c.eq.integral_ftc
+    group: derivatives
+    level: 3
+    name: Fundamental theorem of calculus
+    tex: "\\int_{a}^{b} f'(x)\\,dx = f(b) - f(a)"
+    read: the integral from a to b of f prime of x d x equals f of b minus f of a
+    meaning: 'Adding up all the small changes gives the total change. Integration and differentiation undo each other.'
+    terms:
+      - ["f'(x)\\,dx", 'change over a tiny step']
+      - ['f(b) - f(a)', 'total change']
+    ai: 'Integrated Gradients, an attribution method, explains a prediction by integrating the gradient along a path from a baseline input.'
+  - id: c.eq.chain
+    group: chain
+    level: 3
+    name: Chain rule
+    tex: '\frac{dz}{dx} = \frac{dz}{dy}\cdot\frac{dy}{dx}, \qquad (g \circ f)^{\prime}(x) = g^{\prime}(f(x))\,f^{\prime}(x)'
+    read: d z d x equals d z d y times d y d x
+    meaning: 'If $z$ depends on $y$ and $y$ depends on $x$, the rates multiply: if $y$ changes 3 times as fast as $x$ and $z$ changes 2 times as fast as $y$, then $z$ changes 6 times as fast as $x$.'
+    terms:
+      - ['dz/dy', 'outer rate']
+      - ['dy/dx', 'inner rate']
+    ai: 'Backpropagation is nothing more than the chain rule applied layer by layer, from the loss back to each weight.'
+  - id: c.eq.chain_multi
+    group: chain
+    level: 4
+    name: Multivariable chain rule
+    tex: '\frac{\partial z}{\partial x} = \sum_{j=1}^{m} \frac{\partial z}{\partial y_{j}}\,\frac{\partial y_{j}}{\partial x}'
+    read: partial z partial x equals the sum over j of partial z partial y j times partial y j partial x
+    meaning: 'When $x$ affects $z$ through several paths $y_1, \ldots, y_m$, add up the contribution of every path.'
+    terms:
+      - ['y_j', 'the intermediate variables']
+      - ['\sum_{j}', 'sum over all paths from $x$ to $z$']
+    ai: 'Why a weight used in many places (shared embeddings, RNN weights over time) gets the sum of the gradients from each use.'
+  - id: c.eq.sigmoid
+    group: chain
+    level: 4
+    name: Sigmoid and its derivative
+    tex: '\sigma(z) = \frac{1}{1 + e^{-z}}, \qquad \sigma^{\prime}(z) = \sigma(z)\,\big(1 - \sigma(z)\big)'
+    read: sigma of z equals one over one plus e to the minus z; sigma prime of z equals sigma of z times one minus sigma of z
+    meaning: 'The sigmoid squashes any number into $(0, 1)$. Its derivative is largest (0.25) at $z = 0$ and almost zero for large $|z|$.'
+    terms:
+      - ['e^{-z}', 'large when $z$ is very negative, giving $\sigma \approx 0$']
+      - ['\sigma(1 - \sigma)', 'at most $0.25$: the root of vanishing gradients in deep sigmoid networks']
+    ai: 'Used for probabilities of binary events, gates in LSTMs, and inside SiLU/Swish activations.'
+  - id: c.eq.relu
+    group: chain
+    level: 4
+    name: ReLU and its derivative
+    tex: '\operatorname{ReLU}(z) = \max(0, z), \qquad \operatorname{ReLU}^{\prime}(z) = \mathbb{I}[z > 0]'
+    read: ReLU of z equals max of zero and z; its derivative is the indicator that z is positive
+    meaning: 'Pass positive values through, set negatives to zero. The gradient is 1 or 0: it either passes the error back unchanged or blocks it.'
+    terms:
+      - ['\mathbb{I}[z > 0]', 'gradient gate (at exactly 0, frameworks choose 0)']
+    ai: 'Its gradient does not shrink for positive inputs, which made deep networks trainable (Glorot, Bordes & Bengio, 2011).'
+  - id: c.eq.gradient_def
+    group: partials
+    level: 4
+    name: The gradient vector
+    tex: '\nabla f(\mathbf{x}) = \begin{bmatrix} \dfrac{\partial f}{\partial x_{1}} & \dfrac{\partial f}{\partial x_{2}} & \cdots & \dfrac{\partial f}{\partial x_{n}} \end{bmatrix}^{\top}'
+    read: the gradient of f equals the column of partial f partial x 1 through partial f partial x n
+    meaning: 'Stack the partial derivatives into a vector with the same shape as $\mathbf{x}$.'
+    terms:
+      - ['\partial f / \partial x_i', 'sensitivity to input $i$ alone']
+    ai: 'For a network, $\mathbf{x}$ is replaced by all the weights $\boldsymbol{\theta}$, so the gradient has as many entries as the model has parameters.'
+  - id: c.eq.directional
+    group: partials
+    level: 5
+    name: Directional derivative
+    tex: 'D_{\mathbf{u}} f(\mathbf{x}) = \lim_{h \to 0}\frac{f(\mathbf{x} + h\mathbf{u}) - f(\mathbf{x})}{h} = \nabla f(\mathbf{x})^{\top}\mathbf{u}'
+    read: D u of f at x equals the gradient of f transpose u
+    meaning: 'The slope of $f$ if you walk in direction $\mathbf{u}$. It is largest when $\mathbf{u}$ points along the gradient, which is why the gradient is the steepest direction.'
+    terms:
+      - ['\mathbf{u}', 'a unit direction, $\|\mathbf{u}\|_2 = 1$']
+      - ['\nabla f^{\top}\mathbf{u}', 'dot product with the gradient']
+    ai: 'Forward-mode autodiff computes exactly this (a Jacobian–vector product) in one pass.'
+  - id: c.eq.jacobian_chain
+    group: jacobian
+    level: 5
+    name: Chain rule for Jacobians
+    tex: '\mathbf{J}_{\mathbf{g} \circ \mathbf{f}}(\mathbf{x}) = \mathbf{J}_{\mathbf{g}}\big(\mathbf{f}(\mathbf{x})\big)\;\mathbf{J}_{\mathbf{f}}(\mathbf{x})'
+    read: the Jacobian of g after f at x equals the Jacobian of g at f of x times the Jacobian of f at x
+    meaning: 'The chain rule in many dimensions: Jacobians multiply as matrices, in the same order as the functions are composed.'
+    terms:
+      - ['\mathbf{J}_{\mathbf{f}} \in \mathbb{R}^{m \times n}', 'first map, $\mathbb{R}^{n} \to \mathbb{R}^{m}$']
+      - ['\mathbf{J}_{\mathbf{g}} \in \mathbb{R}^{p \times m}', 'second map, $\mathbb{R}^{m} \to \mathbb{R}^{p}$']
+    ai: 'A deep network’s input–output Jacobian is a product of $L$ matrices; if their norms are below or above 1, gradients vanish or explode.'
+  - id: c.eq.taylor1
+    group: jacobian
+    level: 4
+    name: Taylor approximation
+    tex: "f(x + h) \\approx f(x) + f'(x)\\,h + \\tfrac{1}{2} f''(x)\\,h^{2}"
+    read: f of x plus h is approximately f of x plus f prime of x times h plus one half f double prime of x times h squared
+    meaning: 'Near $x$, any smooth function looks like a line (first two terms) and, more precisely, like a parabola (adding the third).'
+    terms:
+      - ["f'(x)\\,h", 'first-order (linear) change']
+      - ["\\tfrac{1}{2}f''(x)\\,h^{2}", 'second-order (curvature) correction']
+    ai: 'Gradient descent trusts the linear term; Newton’s method and learning-rate analysis use the quadratic term.'
+  - id: c.eq.weight_update
+    group: backprop
+    level: 4
+    name: Updating one weight
+    tex: 'w_{ij} \leftarrow w_{ij} - \eta\,\frac{\partial \mathcal{L}}{\partial w_{ij}}'
+    read: w i j is updated to w i j minus eta times partial L partial w i j
+    meaning: 'If increasing the weight would increase the loss (positive partial), decrease it, and the other way round. The learning rate $\eta$ sets the step size.'
+    terms:
+      - ['\leftarrow', 'assignment: replace the old value']
+      - ['\partial \mathcal{L}/\partial w_{ij}', 'computed by backpropagation']
+      - ['\eta', 'learning rate, e.g. $10^{-3}$']
+    ai: 'Doing this for every weight at once is gradient descent.'
+  - id: c.eq.linear_grads
+    group: backprop
+    level: 5
+    name: Gradients of a linear layer
+    tex: '\mathbf{y} = \mathbf{W}\mathbf{x}: \qquad \frac{\partial \mathcal{L}}{\partial \mathbf{W}} = \frac{\partial \mathcal{L}}{\partial \mathbf{y}}\,\mathbf{x}^{\top}, \qquad \frac{\partial \mathcal{L}}{\partial \mathbf{x}} = \mathbf{W}^{\top}\,\frac{\partial \mathcal{L}}{\partial \mathbf{y}}'
+    read: partial L partial W equals partial L partial y times x transpose; partial L partial x equals W transpose times partial L partial y
+    meaning: 'The weight gradient is an outer product of the incoming error and the input. The error passed further back is the output error multiplied by $\mathbf{W}^{\top}$.'
+    terms:
+      - ['\partial\mathcal{L}/\partial\mathbf{y} \in \mathbb{R}^{m}', 'error arriving from the layer above']
+      - ['\mathbf{x}^{\top}', 'layer input (saved during the forward pass)']
+      - ['\mathbf{W}^{\top}', 'sends the error back to the inputs']
+    ai: 'Why training has to store activations: the backward pass needs $\mathbf{x}$ again. Activation checkpointing recomputes them instead.'
+  - id: c.eq.backprop
+    group: backprop
+    level: 5
+    name: Backpropagation recursion
+    tex: '\boldsymbol{\delta}^{(l)} = \Big(\big(\mathbf{W}^{(l+1)}\big)^{\top}\boldsymbol{\delta}^{(l+1)}\Big) \odot \phi^{\prime}\big(\mathbf{z}^{(l)}\big), \qquad \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(l)}} = \boldsymbol{\delta}^{(l)}\,\big(\mathbf{a}^{(l-1)}\big)^{\top}'
+    read: delta l equals W l plus 1 transpose times delta l plus 1, element-wise times phi prime of z l
+    meaning: 'Send the error back through the next layer’s weights, then scale it element-wise by the slope of this layer’s activation. The weight gradient is that error times the layer’s input.'
+    terms:
+      - ['\mathbf{z}^{(l)} = \mathbf{W}^{(l)}\mathbf{a}^{(l-1)} + \mathbf{b}^{(l)}', 'pre-activation of layer $l$']
+      - ['\mathbf{a}^{(l)} = \phi(\mathbf{z}^{(l)})', 'activation (output) of layer $l$']
+      - ['\boldsymbol{\delta}^{(l+1)}', 'error one layer up']
+      - ['\odot\,\phi^{\prime}(\mathbf{z}^{(l)})', 'gate by the activation’s slope']
+    ai: 'One backward pass gives the gradient for every weight at roughly twice the cost of the forward pass.'
+    cite: 'Rumelhart, Hinton & Williams, “Learning representations by back-propagating errors”, 1986'
+  - id: c.eq.vjp
+    group: backprop
+    level: 5
+    name: Vector–Jacobian product (reverse mode)
+    tex: '\bar{\mathbf{x}} = \mathbf{J}^{\top}\bar{\mathbf{y}}, \qquad \mathbf{J} = \frac{\partial \mathbf{y}}{\partial \mathbf{x}}'
+    read: x bar equals J transpose y bar
+    meaning: 'Reverse-mode autodiff never builds $\mathbf{J}$. Each operation only knows how to multiply an incoming adjoint $\bar{\mathbf{y}}$ by its transposed Jacobian.'
+    terms:
+      - ['\bar{\mathbf{y}} = \partial\mathcal{L}/\partial\mathbf{y}', 'adjoint of the output']
+      - ['\bar{\mathbf{x}} = \partial\mathcal{L}/\partial\mathbf{x}', 'adjoint of the input']
+    ai: 'This is the `backward` method of every PyTorch `autograd.Function`, and `jax.vjp`.'
+  - id: c.eq.softplus_grad
+    group: chain
+    level: 5
+    name: Chain rule through the log-sigmoid
+    tex: '\frac{d}{dz}\big[-\log \sigma(z)\big] = -\frac{\sigma(z)\,(1 - \sigma(z))}{\sigma(z)} = \sigma(z) - 1'
+    read: the derivative of minus log sigma of z equals sigma of z minus one
+    meaning: 'Outer function $-\log u$ has derivative $-1/u$; inner $\sigma(z)$ has $\sigma(1 - \sigma)$. Multiplying, the $\sigma$ cancels and a simple answer is left.'
+    terms:
+      - ['-\log u', 'outer: derivative $-1/u$']
+      - ['u = \sigma(z)', 'inner: derivative $\sigma(z)(1-\sigma(z))$']
+    ai: 'This is the gradient of the DPO and reward-model losses, $-\log\sigma(\Delta r)$, with respect to the reward margin.'
