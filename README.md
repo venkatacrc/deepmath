@@ -7,7 +7,9 @@ it is used in modern AI. Equation cards also explain each term, so a formula lik
 DPO stops being a wall of symbols.
 
 It is built on the same app layout as Sloka Words: sidebar selection, Learn and
-Test modes, Known / Review marks, shuffle, print / PDF, and deck import.
+Test modes, Known / Review marks, shuffle, print / PDF, and deck import. There is
+also a **progressive web app** in `web/` that installs on Pixel phones (and any
+modern Android Chrome) for offline practice.
 
 ## What the course covers
 
@@ -30,7 +32,7 @@ Undergraduate (111) and Masters (129). With Shuffle off, cards come in course or
 Grade 5–6 card across all branches first, then Grade 7–8, and so on. Every card, even at
 Grade 5, ends with a note on where the idea is used in modern AI.
 
-## Build and run
+## Build and run (Mac)
 
 Requires macOS 14 or later and the Xcode Command Line Tools (`xcode-select --install`).
 
@@ -41,7 +43,50 @@ open build/DeepMath.app
 
 For development you can also run `swift run --package-path app`.
 
-## Using the app
+## Web app (Pixel / Android)
+
+The same course runs as a phone-friendly PWA under `web/`. Formulas are typeset with
+bundled KaTeX, progress is stored in the browser, and a service worker keeps the deck
+working offline after the first visit.
+
+### Open it on a Pixel
+
+1. Sync the latest deck and stamp the offline cache:
+
+   ```sh
+   ./scripts/sync_web.sh
+   ```
+
+2. Serve the folder (any static host works; for a quick local test):
+
+   ```sh
+   cd web && python3 -m http.server 8080
+   ```
+
+3. On the Pixel, open Chrome to `http://<your-mac-ip>:8080`. Same Wi-Fi as the Mac.
+   Find the Mac’s IP with `ipconfig getifaddr en0`.
+
+4. Chrome menu **⋮ → Install app** or **Add to Home screen**. Deep Math then opens
+   full-screen like a native app and works offline.
+
+To put it on the public internet, push the repo and enable **GitHub Pages** with the
+source set to **Deploy from a branch → `main` → `/` (root)**. The site is then:
+
+- https://venkatacrc.github.io/deepmath/ (redirects into the app)
+- https://venkatacrc.github.io/deepmath/web/ (the app itself)
+
+HTTPS is required for Install on Android except for `localhost`.
+
+### Phone controls
+
+- **☰ drawer:** levels, topics (with known/total), practice filter, shuffle, restart,
+  test direction (notation→meaning or meaning→notation), reset progress.
+- **Notation / Equations / Both** and **Learn / Test** segmented controls at the top.
+- Tap the card (or **Show answer**) to reveal; swipe left/right to change cards.
+- **Known / Review** in Learn; **Got it / Missed** in Test; speaker button reads the
+  formula aloud.
+
+## Using the Mac app
 
 - **Notation / Equations / Both** (toolbar): practice single symbols, whole equations, or both.
 - **Learn / Test** (toolbar):
@@ -122,12 +167,15 @@ in the app. Afterwards rebuild the app with `./scripts/build_app.sh`, or use
 ## Layout
 
 ```
-app/                         Swift package (SwiftUI app)
-  Sources/DeepMath/Resources/deck.json   generated deck bundled into the app
-  Sources/DeepMath/Resources/web/        card.html / card.js / card.css and KaTeX 0.16.22 (MIT)
+app/                         Swift package (SwiftUI Mac app)
+  Sources/DeepMath/Resources/deck.json   generated deck bundled into the Mac app
+  Sources/DeepMath/Resources/web/        KaTeX card renderer used by the Mac app
+web/                         progressive web app for Pixel / Android (and desktop browsers)
+  index.html, app.css, app.js, sw.js, manifest.webmanifest, icons/, katex/, deck.json
 content/                     the course: course.yaml plus one YAML file per branch
 tools/build_deck.py          deck builder and validator
 tools/check_tex.mjs          parses every formula with the bundled KaTeX
 scripts/build_app.sh         builds build/DeepMath.app
-scripts/make_icon.swift      draws the ∇ app icon
+scripts/sync_web.sh          copies the deck into web/ and stamps the PWA cache
+scripts/make_icon.swift      draws the ∇ app icon (Mac .iconset or --web PNGs)
 ```
