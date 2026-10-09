@@ -1,6 +1,6 @@
 // Network first so a new deck or app version shows up as soon as the phone is online;
 // the cache keeps everything working offline on Pixel / Android.
-const CACHE = 'deepmath-227d35fbbb';
+const CACHE = 'deepmath-cdd7f9dc72';
 const FILES = [
     './',
     'index.html',
